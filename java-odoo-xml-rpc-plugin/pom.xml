@@ -28,7 +28,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>java-odoo-xml-rpc-plugin</artifactId>
-    <version>${parent.version}</version>
     <packaging>maven-plugin</packaging>
     <url>https://github.com/Helvethink/java-odoo-xml-rpc</url>
 
@@ -57,7 +56,6 @@
         <dependency>
             <groupId>ch.helvethink.odoo4java</groupId>
             <artifactId>java-odoo-xml-rpc-core</artifactId>
-            <version>${parent.version}</version>
         </dependency>
 
         <!-- xml rpc cli -->

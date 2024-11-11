@@ -27,7 +27,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>java-odoo-xml-rpc-core</artifactId>
-    <version>${parent.version}</version>
     <name>java-odoo-xml-rpc-core</name>
     <url>https://github.com/Helvethink/java-odoo-xml-rpc</url>
 
