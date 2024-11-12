@@ -1,6 +1,6 @@
 # java-odoo-xml-rpc
 
-[![Static Badge](https://img.shields.io/badge/maven%20central-0.0.1-red)](https://central.sonatype.com/artifact/ch.helvethink.odoo4java/java-odoo-xml-rpc-core)
+[![Static Badge](https://img.shields.io/badge/maven%20central-0.0.1-red)](https://central.sonatype.com/namespace/ch.helvethink.odoo4java)
 [![Static Badge](https://img.shields.io/badge/code%20coverage-~90%-blue)]()
 
 The `Java Odoo XML-RPC` project provides tooling and abstraction for interactions with your Odoo XML-RPC API.\
