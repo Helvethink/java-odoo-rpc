@@ -335,7 +335,6 @@ public class OdooClient {
      * @param classToConvert The type of the target objects
      * @param <T>            The type of the target objects
      * @return List of built objects
-     * @throws XmlRpcException when an error occurs with the XML-RPC API
      */
     public <T extends OdooObj> List<T> findListByIds(final List<OdooId> idsToFetch, final Class<T> classToConvert) {
         return findListByIdsInt(idsToFetch == null ? null : idsToFetch.stream().filter(odooId -> odooId.exists).map(odooId -> odooId.id).toList(), classToConvert);
