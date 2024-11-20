@@ -44,13 +44,16 @@ public class FieldUtils {
      * @param fieldName The field name to sanitize
      * @return fieldName in CamelCase
      */
-    public static String formatFieldName(final String fieldName) {
+    public static String formatFieldName(String fieldName) {
+        fieldName = fieldName.replaceAll("^_+","");
         final String[] splittedFieldName = fieldName.split("_");
         final StringBuilder sanitizedFieldName = new StringBuilder();
         // There's at least one element as package name into the model
         sanitizedFieldName.append(splittedFieldName[0]);
         for (int i = 1; i < splittedFieldName.length; i++) {
-            sanitizedFieldName.append(StringUtils.capitalizeFirstLetter(splittedFieldName[i]));
+            if(!StringUtils.isEmpty(splittedFieldName[i])) {
+                sanitizedFieldName.append(StringUtils.capitalizeFirstLetter(splittedFieldName[i]));
+            }
         }
         return sanitizedFieldName.toString();
     }

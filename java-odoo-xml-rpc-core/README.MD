@@ -58,6 +58,7 @@ public class OdooClientSampleUsage {
         // Initialize an OdooClient to fetch answers
 
         OdooClient cli = new OdooClient(ODOO_URL, DBNAME, USERNAME, PASSWORD, true);
+        OdooObjectLoader loader = new OdooObjectLoader(cli);
 
         LOG.info(cli.getVersion());
 
@@ -65,18 +66,18 @@ public class OdooClientSampleUsage {
         idToFetch.id = 2;
 
         // Fetch a single Object by Odoo ID
-        Project project = cli.fetchObjectById("project.project", idToFetch, Project.class);
+        Project project = cli.findObjectById("project.project", idToFetch, Project.class);
         LOG.info(project.getDisplayName());
 
         OdooId id2fetch = new OdooId();
         id2fetch.id = 3;
         // Fetch multiple objects by Odoo IDs
-        List<Project> projects = cli.fetchListByIds("project.project", Arrays.asList(idToFetch, id2fetch), Project.class);
+        List<Project> projects = cli.findListByIds("project.project", Arrays.asList(idToFetch, id2fetch), Project.class);
         LOG.info(projects.stream().map(pt -> pt.getDisplayName()).collect(Collectors.joining(",")));
 
         // Fetch relationships for an odoo object, not recursively, filtering classes we want to fetch
 
-        cli.fetchRelationShips(project, Arrays.asList(ProjectTask.class, ResUsers.class));
+        loader.fetchRelationShips(project, Arrays.asList(ProjectTask.class, ResUsers.class));
 
         LOG.info("1) Find by criteria 'equals' - {}", cli.findByCriteria(1, Project.class, "name", "=", "Sample Project").stream().map(a -> a.getName()).collect(Collectors.joining(",")));
         LOG.info("2) Find by criteria 'like' - {}", cli.findByCriteria(1, Project.class, "name", "like", "%Sample%").stream().map(a -> a.getName()).collect(Collectors.joining(",")));
@@ -87,22 +88,28 @@ public class OdooClientSampleUsage {
         // Find a list of objects using search criteria, with a limit specified - the first parameter, here 1. 
         // If no criteria is specified then everything will be fetched.
         List<TimesheetsAnalysisReport> timesheet = cli.findByCriteria(1, TimesheetsAnalysisReport.class);
-        LOG.info("5) Find by criteria limit 1 without criterion - {}" + timesheet.stream().map(a -> a.getName()).collect(Collectors.joining(",")));
+        LOG.info("5) Find by criteria limit 1 without criterion - {}", timesheet.stream().map(a -> a.getName()).collect(Collectors.joining(",")));
 
         // If 0, then will fetch all objects.
         List<TimesheetsAnalysisReport> ts = cli.findByCriteria(0, TimesheetsAnalysisReport.class);
-        LOG.info("6) Find by criteria no limit without criterion - {}" + ts.stream().map(a -> a.getName()).collect(Collectors.joining(",")));
+        LOG.info("6) Find by criteria no limit without criterion - {}", ts.stream().map(a -> a.getName()).collect(Collectors.joining(",")));
 
         // Fetch recursively with depth = 2
-        cli.fetchRecursivelyRelationShips(ts.get(ts.size() - 1), 2, Collections.emptyList());
+        loader.fetchRecursivelyRelationShips(ts.getLast(), 2, Collections.emptyList());
         // Check that we fetched Currency Too
-        LOG.info(ts.get(ts.size() - 1).getCompanyIdAsObject().getName());
-        LOG.info(ts.get(ts.size() - 1).getCompanyIdAsObject().getCurrencyIdAsObject().getDisplayName());
+        LOG.info(ts.getLast().getCompanyIdAsObject().getName());
+        LOG.info(ts.getLast().getCompanyIdAsObject().getCurrencyIdAsObject().getDisplayName());
 
         // Fetch using the criterion name like %Sample%
         List<Project> sampleProjects = cli.findByCriteria(1, Project.class, "name", "like", "%Sample%");
-        cli.fetchRelationShips(sampleProjects.get(0), Collections.emptyList());
-        LOG.info(sampleProjects.get(0).getTasksAsList().get(0).getDisplayName());
+        loader.fetchRelationShips(sampleProjects.getFirst(), Collections.emptyList());
+        LOG.info(sampleProjects.getFirst().getTasksAsList().get(0).getDisplayName());
+
+        // Find by names
+        cli.findByNames(ProjectTask.class, Collections.singletonList("Sample Project Task 1"));
+        cli.findByNames(ProjectTask.class, Arrays.asList("Sample Project Task 1", "Sample Project Task 1"));
+        cli.findByNames(ProjectTask.class, Arrays.asList("InfoLogo - Presales", "Boundary / Cutover", "Unknownwnwnwn"));
+
     }
 }
 ```
@@ -113,7 +120,7 @@ N.B: Model classes have been generated using the java-odoo-xml-rpc-plugin:
 <plugin>
                 <groupId>ch.helvethink.odoo4java</groupId>
                 <artifactId>java-odoo-xml-rpc-plugin</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <version>${odoo4java.version}</version>
                 <configuration>
                     <generatedClassesRootPackage>ch.helvethink.odoo.models</generatedClassesRootPackage>
                     <generatedClassPath>target/generated-sources</generatedClassPath>

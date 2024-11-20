@@ -47,13 +47,17 @@ public final class OdooConstants {
      */
     public static final String ODOO_SEARCH_READ_API = "search_read";
     /**
+     * Odoo XML-RPC API Name search method
+     */
+    public static final String ODOO_NAME_SEARCH_API = "name_search";
+    /**
      * Odoo XML-RPC API fetch fields method
      */
     public static final String ODOO_FETCH_FIELDS_API = "fields_get";
     /**
      * Odoo XML-RPC API attributes we want to fetch when fetching fields of a model
      */
-    public static final List<String> ATTRIBUTES_FOR_FETCHED_FIELDS = asList("string", "help", "type", "relation");
+    protected static final List<String> ATTRIBUTES_FOR_FETCHED_FIELDS = asList("string", "help", "type", "relation");
     /**
      * Odoo XML-RPC API specific field. When this field does not exists it means that the model is not accessible through API.
      */

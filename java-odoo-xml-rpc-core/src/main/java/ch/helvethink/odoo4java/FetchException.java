@@ -23,6 +23,26 @@
  *
  */
 
-File touchFile = new File( basedir, "target/touch.txt" )
+package ch.helvethink.odoo4java;
 
-assert touchFile.isFile()
+/**
+ * Exception used when fetch of relationships fails
+ */
+public class FetchException extends RuntimeException {
+
+    /**
+     * Construuctor from parent exception
+     * @param e Parent exception
+     */
+    public FetchException(final Exception e) {
+        super(e);
+    }
+
+    /**
+     * Exception with message
+     * @param s The error description
+     */
+    public FetchException(final String s) {
+        super(s);
+    }
+}
