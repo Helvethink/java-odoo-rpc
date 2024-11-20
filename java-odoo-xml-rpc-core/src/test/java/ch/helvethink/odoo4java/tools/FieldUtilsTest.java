@@ -23,6 +23,46 @@
  *
  */
 
-File touchFile = new File( basedir, "target/touch.txt" )
+package ch.helvethink.odoo4java.tools;
 
-assert touchFile.isFile()
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class FieldUtilsTest {
+
+    @Test
+    void testFormatFieldNameSingleWord() {
+        genericTestForFormatFieldName("fieldname", "fieldname");
+    }
+
+    @Test
+    void testFormatFieldNamemultipleWords() {
+        genericTestForFormatFieldName("field_name_example", "fieldNameExample");
+    }
+
+    @Test
+    void testFormatFieldNameWithUnderscoreAtStart() {
+        genericTestForFormatFieldName("_field_name", "fieldName");
+    }
+
+    @Test
+    void testFormatFieldNameWithUnderscoreAtEnd() {
+        genericTestForFormatFieldName("field_name_", "fieldName");
+    }
+
+    @Test
+    void testFormatFieldNameWithConsecutiveUnderscores() {
+        genericTestForFormatFieldName("field__name", "fieldName");
+    }
+
+    @Test
+    void testFormatFieldNameEmptyString() {
+        genericTestForFormatFieldName("", "");
+    }
+
+    private void genericTestForFormatFieldName(String input, String expected) {
+        assertEquals(expected, FieldUtils.formatFieldName(input));
+    }
+
+}

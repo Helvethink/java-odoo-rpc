@@ -71,8 +71,7 @@ public final class ClassTools {
             case "float" -> "double";
             case "many2one" -> "OdooId";
             case "one2many", "many2many" -> "List<Integer>";
-            case "datetime" -> "Date";
-//            case "date": return Long; //NOSONAR
+            case "datetime", "date" -> "Date";
             default -> "Object";
         };
     }

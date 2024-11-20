@@ -25,18 +25,16 @@
 
 package ch.helvethink.odoo4java.xmlrpc;
 
-import ch.helvethink.odoo4java.models.FieldRelation;
+import ch.helvethink.odoo4java.FetchException;
 import ch.helvethink.odoo4java.models.OdooId;
 import ch.helvethink.odoo4java.models.OdooObj;
 import ch.helvethink.odoo4java.models.OdooObject;
-import ch.helvethink.odoo4java.tools.FieldUtils;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.*;
@@ -45,7 +43,6 @@ import static ch.helvethink.odoo4java.xmlrpc.OdooConstants.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static org.codehaus.plexus.util.StringUtils.capitalizeFirstLetter;
 
 /**
  * Abstraction of Odoo's XML-RPC API
@@ -88,12 +85,13 @@ public class OdooClient {
 
     /**
      * Constructor with direct connection
+     *
      * @param instanceUrl The odoo Instance URL
-     * @param dbName The odoo DB Name
-     * @param username The Odoo username when authenticating
-     * @param password The Odoo password when authenticating
+     * @param dbName      The odoo DB Name
+     * @param username    The Odoo username when authenticating
+     * @param password    The Odoo password when authenticating
      * @throws MalformedURLException when URI is not valid
-     * @throws XmlRpcException when an error occurs with the XML-RPC API
+     * @throws XmlRpcException       when an error occurs with the XML-RPC API
      */
     public OdooClient(final String instanceUrl, final String dbName, final String username, final String password) throws MalformedURLException, XmlRpcException {
         this(instanceUrl, dbName, username, password, true);
@@ -101,13 +99,14 @@ public class OdooClient {
 
     /**
      * Constructor that initializes the Common API XML-RPC client
+     *
      * @param instanceUrl The odoo Instance URL
-     * @param dbName The odoo DB Name
-     * @param username The Odoo username when authenticating
-     * @param password The Odoo password when authenticating
+     * @param dbName      The odoo DB Name
+     * @param username    The Odoo username when authenticating
+     * @param password    The Odoo password when authenticating
      * @param mustConnect - describes if we must try to connect or not
      * @throws MalformedURLException when URI is not valid
-     * @throws XmlRpcException when an error occurs with the XML-RPC API
+     * @throws XmlRpcException       when an error occurs with the XML-RPC API
      */
     public OdooClient(final String instanceUrl, final String dbName, final String username, final String password, final boolean mustConnect) throws MalformedURLException, XmlRpcException {
         this(new XmlRpcClient() {{
@@ -121,14 +120,15 @@ public class OdooClient {
 
     /**
      * Constructor with all fields
+     *
      * @param commonClient - The common XML-RPC API client
-     * @param instanceUrl The odoo Instance URL
-     * @param dbName The odoo DB Name
-     * @param username The Odoo username when authenticating
-     * @param password The Odoo password when authenticating
-     * @param mustConnect - describes if we must try to connect or not
+     * @param instanceUrl  The odoo Instance URL
+     * @param dbName       The odoo DB Name
+     * @param username     The Odoo username when authenticating
+     * @param password     The Odoo password when authenticating
+     * @param mustConnect  - describes if we must try to connect or not
      * @throws MalformedURLException when URI is not valid
-     * @throws XmlRpcException when an error occurs with the XML-RPC API
+     * @throws XmlRpcException       when an error occurs with the XML-RPC API
      */
     public OdooClient(final XmlRpcClient commonClient, final String instanceUrl, final String dbName, final String username, final String password, final boolean mustConnect) throws MalformedURLException, XmlRpcException {
         this.dbName = dbName;
@@ -158,6 +158,7 @@ public class OdooClient {
 
     /**
      * Retrieve Version from the Odoo Server
+     *
      * @return Version like "17.0"
      * @throws XmlRpcException when an error occurs with the XML-RPC API
      */
@@ -167,6 +168,7 @@ public class OdooClient {
 
     /**
      * Retrieve all Odoo models of the Odoo instance we're connected to
+     *
      * @param packageName - allows to filter the names of models we want to retrieve
      * @return List of Odoo models with fields like "description", "name", "access_ids", ...
      * @throws XmlRpcException when an error occurs with the XML-RPC API
@@ -189,6 +191,7 @@ public class OdooClient {
 
     /**
      * Get fields From Odoo, for a given model
+     *
      * @param modelName The model we want to inspect
      * @return The list of fields as a Map containing the following information: string, help, type, and relation
      * @throws XmlRpcException when an error occurs with the XML-RPC API
@@ -203,106 +206,58 @@ public class OdooClient {
         return (Map<String, Map<String, Object>>) objectXmlRpcClient.execute(XML_RPC_EXECUTE_METHOD_NAME, params);
     }
 
+
     /**
-     * Fetch relationships from an Odoo object, without recursion
-     * @param o The object to fetch
-     * @param classesToFetch The list of types we want to fetch, If empty everything will be fetched
-     * @return true when succeeded
+     * Find a list of object from names
+     *
+     * @param classToConvert The type of objects
+     * @param names          The "name" value of objects we're looking for
+     * @param <T>            The type of objects to return
+     * @return List of found objects
      */
-    public boolean fetchRelationShips(final Object o, final List<Class<? extends OdooObj>> classesToFetch) {
-        Arrays.stream(o.getClass().getDeclaredFields())
-                .filter(f -> f.isAnnotationPresent(FieldRelation.class))
-                .forEach(
-                        fieldRelation -> {
-                            String fieldToUpdate = FieldUtils.formatFieldName(fieldRelation.getName());
-                            try {
-                                final Class<? extends OdooObj> aClass = (Class<? extends OdooObj>) Class.forName(fieldRelation.getAnnotation(FieldRelation.class).value());
-                                if (classesToFetch.isEmpty() || classesToFetch.contains(aClass)) {
-                                    if (fieldRelation.getType().equals(List.class)) {
-                                        // name of associated attribute to populate is <fieldName>AsList
-                                        Object ids = o.getClass().getDeclaredMethod("get" + capitalizeFirstLetter(fieldToUpdate)).invoke(o);
-                                        o.getClass().getDeclaredMethod("set" + capitalizeFirstLetter(fieldToUpdate) + "AsList", List.class).invoke(o, fetchListByIdsInt(aClass.getDeclaredAnnotation(OdooObject.class).value(), (List<Integer>) ids, aClass));
-                                    } else {
-                                        // name of associated attribute to populate is <fieldNameAsObject>
-                                        Object id = o.getClass().getDeclaredMethod("get" + capitalizeFirstLetter(fieldToUpdate)).invoke(o);
-                                        o.getClass().getDeclaredMethod("set" + capitalizeFirstLetter(fieldToUpdate) + "AsObject", aClass).invoke(o, fetchObjectById(aClass.getDeclaredAnnotation(OdooObject.class).value(), (OdooId) id, aClass));
-                                    }
-                                }
-                            } catch (final IllegalAccessException | ClassNotFoundException | XmlRpcException | InvocationTargetException | NoSuchMethodException e) {
-                                throw new RuntimeException(e); //NOSONAR
-                            }
-                        }
-                );
-        return true;
+    public <T extends OdooObj> List<T> findByNames(final Class<T> classToConvert, final List<String> names) {
+        LOG.debug("Searching {} with names: {}", classToConvert.getSimpleName(), names);
+        return findListByIdsInt(names.stream().map(aName -> findByName(classToConvert, aName))
+                        .filter(result -> result.length > 0) // If object is not found we don't want to get an exception
+                        .map(result -> (Integer) ((Object[]) result[0])[0]).toList(), // id is the first field
+                classToConvert);
     }
 
     /**
-     * The same as {@link #fetchRelationShips(Object, List)} but recursively
-     * Warn! Since there are a lot of relationships, this increases number of calls and might be less performant
-     * Ideally when using depth, indicate the classes you want to fetch to avoid wasting time
-     * @param o The initial object we want to fetch relationships for
-     * @param depth The depth to which we want to fetch Objects
-     * @param classesToFetch The list of types we want to fetch
-     * @return true if operation is a success
+     * Fetch a single object from its name
+     *
+     * @param classToConvert The object's type
+     * @param aName          The name of the object
+     * @param <T>            The object's type
+     * @return The id of the object under its XML-RPC representation (array of objects)
      */
-    public boolean fetchRecursivelyRelationShips(final Object o, final int depth, final List<Class<? extends OdooObj>> classesToFetch) {
-        if (depth <= 0) {
-            return true;
+    private <T extends OdooObj> Object[] findByName(final Class<T> classToConvert, final String aName) {
+        try {
+            return (Object[]) objectXmlRpcClient.execute(
+                    XML_RPC_EXECUTE_METHOD_NAME, asList(
+                            dbName, uid, password,
+                            classToConvert.getDeclaredAnnotation(OdooObject.class).value(), // modelName
+                            ODOO_NAME_SEARCH_API, Collections.singletonList(aName), // Pass name as a single string
+                            new HashMap<String, Object>() {{
+                                put("limit", 1);
+                            }}
+                    )
+            );
+        } catch (final XmlRpcException e) {
+            throw new FetchException(e);
         }
-
-        Arrays.stream(o.getClass().getDeclaredFields())
-                .filter(f -> f.isAnnotationPresent(FieldRelation.class))
-                .forEach(
-                        fieldRelation -> {
-                            String fieldToUpdate = FieldUtils.formatFieldName(fieldRelation.getName());
-                            try {
-                                final Class<? extends OdooObj> aClass = (Class<? extends OdooObj>) Class.forName(fieldRelation.getAnnotation(FieldRelation.class).value());
-                                if (classesToFetch.isEmpty() || classesToFetch.contains(aClass)) {
-                                    if (fieldRelation.getType().equals(List.class)) {
-                                        LOG.debug("fieldRelation: {}", fieldRelation);
-
-                                        Object ids = o.getClass().getDeclaredMethod("get" + capitalizeFirstLetter(fieldToUpdate)).invoke(o);
-                                        final List<?> fetchedList = fetchListByIdsInt(
-                                                aClass.getDeclaredAnnotation(OdooObject.class).value(),
-                                                (List<Integer>) ids,
-                                                aClass
-                                        );
-                                        o.getClass().getDeclaredMethod("set" + capitalizeFirstLetter(fieldToUpdate) + "AsList", List.class).invoke(o, fetchedList);
-                                        // Recursive call for each list's element if depth has not been reached and we're not in "lazy_list" mode
-                                        for (final Object relatedObject : fetchedList) {
-                                            fetchRecursivelyRelationShips(relatedObject, depth - 1, classesToFetch);
-                                        }
-                                    } else {
-                                        Object id = o.getClass().getDeclaredMethod("get" + capitalizeFirstLetter(fieldToUpdate)).invoke(o);
-                                        final Object fetchedObject = fetchObjectById(
-                                                aClass.getDeclaredAnnotation(OdooObject.class).value(),
-                                                (OdooId) id,
-                                                aClass
-                                        );
-                                        o.getClass().getDeclaredMethod("set" + capitalizeFirstLetter(fieldToUpdate) + "AsObject", aClass).invoke(o, fetchedObject);
-
-                                        // recursive call if object exists and depth has not been reached
-                                        if (fetchedObject != null) {
-                                            fetchRecursivelyRelationShips(fetchedObject, depth - 1, classesToFetch);
-                                        }
-                                    }
-                                }
-                            } catch (final IllegalAccessException | ClassNotFoundException | XmlRpcException | InvocationTargetException | NoSuchMethodException e) {
-                                throw new RuntimeException(e); //NOSONAR
-                            }
-                        }
-                );
-        return true;
     }
+
 
     /**
      * Find an Odoo object using criteria.
      * If no criteria, will send all the objects (id >=0 )
-     * @param limit Number of objects we want to retrieve
+     *
+     * @param limit          Number of objects we want to retrieve
      * @param classToConvert Type of the target object
-     * @param criteria The search criteria
+     * @param criteria       The search criteria
+     * @param <T>            The target type
      * @return List of corresponding objects
-     * @param <T> The target type
      * @throws XmlRpcException when an error occurs with the XML-RPC API
      */
     public <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final String... criteria) throws XmlRpcException {
@@ -310,8 +265,7 @@ public class OdooClient {
                 List.of(List.of(asList("id", ">=", "0")));
         LOG.debug("{}", crits);
         final Object[] resultFromXmlRpc = (Object[]) objectXmlRpcClient.execute(
-                XML_RPC_EXECUTE_METHOD_NAME, asList(
-                        dbName, uid, password,
+                XML_RPC_EXECUTE_METHOD_NAME, asList(dbName, uid, password,
                         classToConvert.getDeclaredAnnotation(OdooObject.class).value(), //modelName,
                         ODOO_SEARCH_READ_API, crits, new HashMap<String, Object>() {{
                             put("limit", limit);
@@ -325,85 +279,66 @@ public class OdooClient {
 
     /**
      * Fetch an object by its id
-     * @param modelName The Odoo model name
-     * @param idToFetch The id of the object we want to fetch
+     *
+     * @param idToFetch      The id of the object we want to fetch
      * @param classToConvert The type of the target Object
+     * @param <T>            The type of the target Object
      * @return The object fetched
-     * @param <T> The type of the target Object
      * @throws XmlRpcException when an error occurs with the XML-RPC API
      */
-    public <T extends OdooObj> T fetchObjectById(final String modelName, final OdooId idToFetch, final Class<T> classToConvert) throws XmlRpcException {
-        if (!idToFetch.exists) {
+    public <T extends OdooObj> T findObjectById(final OdooId idToFetch, final Class<T> classToConvert) throws XmlRpcException {
+        if (idToFetch == null || !idToFetch.exists) {
             return null;
         }
 
         final Object[] resultFromXmlRpc = (Object[]) objectXmlRpcClient.execute(
-                XML_RPC_EXECUTE_METHOD_NAME, asList(dbName, uid, password, modelName, "read", List.of(idToFetch.id)
+                XML_RPC_EXECUTE_METHOD_NAME, asList(dbName, uid, password,
+                        classToConvert.getDeclaredAnnotation(OdooObject.class).value(), "read", List.of(idToFetch.id)
                 ));
         return odooObjectMapper.convertValue(resultFromXmlRpc[0], classToConvert);
     }
 
     /**
-     * Same as {@link #fetchObjectById(String, OdooId, Class)} but with a List
-     * @param modelName The Odoo model name
-     * @param idsToFetch The ids of objects we want to fetch
+     * Same as {@link #findObjectById(OdooId, Class)} but with a List
+     *
+     * @param idsToFetch     The ids of objects we want to fetch
      * @param classToConvert The type of the target objects
+     * @param <T>            The type of the target objects
+     *                       If an exception occured, will send back an empty list
      * @return List of built objects
-     * @param <T> The type of the target objects
-     * If an exception occured, will send back an empty list
      */
-    public <T extends OdooObj> List<T> fetchListByIdsInt(final String modelName, final List<Integer> idsToFetch, final Class<T> classToConvert) {
+    public <T extends OdooObj> List<T> findListByIdsInt(final List<Integer> idsToFetch, final Class<T> classToConvert) {
         if (idsToFetch == null || idsToFetch.isEmpty()) {
             return Collections.emptyList();
         }
-
-        LOG.info("modelName: {}", modelName);
-        LOG.info("idstofetch: {}", idsToFetch);
-
         try {
             final Object[] resultFromXmlRpc = (Object[]) objectXmlRpcClient.execute(
-                    XML_RPC_EXECUTE_METHOD_NAME, asList(
-                            dbName, uid, password,
-                            modelName, "read",
-                            List.of(idsToFetch)));
+                    XML_RPC_EXECUTE_METHOD_NAME, asList(dbName, uid, password,
+                            classToConvert.getDeclaredAnnotation(OdooObject.class).value(), "read", List.of(idsToFetch)));
             return Arrays.stream(resultFromXmlRpc)
                     .map(anObject -> odooObjectMapper.convertValue(anObject, classToConvert))
                     .toList();
-
         } catch (final XmlRpcException e) {
-            LOG.error("Exception occured", e); // because of account.move.line
-            //   File "/usr/lib/python3.11/xmlrpc/client.py", line 605,
-            //   in dump_struct raise TypeError("dictionary key must be string")
-            //   TypeError: dictionary key must be string)
-            return Collections.emptyList();
+            if (e.getMessage().contains("TypeError: dictionary key must be string")) {
+                LOG.error("Exception occured for class {} with ids {}", classToConvert.getSimpleName(), idsToFetch, e); // because of account.move.line
+                return Collections.emptyList();
+            } else {
+                throw new FetchException(e);
+            }
         }
     }
 
     /**
-     * Same as above but with Odoo Ids, and no catch of the exception
-     * @param modelName The Odoo model name
-     * @param idsToFetch The ids of objects we want to fetch under the form of {@link OdooId}
+     * Same as above but with Odoo Ids
+     *
+     * @param idsToFetch     The ids of objects we want to fetch under the form of {@link OdooId}
      * @param classToConvert The type of the target objects
+     * @param <T>            The type of the target objects
      * @return List of built objects
-     * @param <T> The type of the target objects
      * @throws XmlRpcException when an error occurs with the XML-RPC API
      */
-    public <T extends OdooObj> List<T> fetchListByIds(final String modelName, final List<OdooId> idsToFetch, final Class<T> classToConvert) throws XmlRpcException {
-        if (idsToFetch == null || idsToFetch.isEmpty() || idsToFetch.stream().noneMatch(id -> id.exists)) {
-            return Collections.emptyList();
-        }
-
-        final Object[] resultFromXmlRpc = (Object[]) objectXmlRpcClient.execute(
-                XML_RPC_EXECUTE_METHOD_NAME, asList(
-                        dbName, uid, password,
-                        modelName, "read",
-                        List.of(idsToFetch.stream().filter(anId -> anId.exists).map(id -> id.id).toList())
-                )
-        );
-        return Arrays.asList(resultFromXmlRpc)
-                .stream()
-                .map(anObject -> odooObjectMapper.convertValue(anObject, classToConvert))
-                .toList();
+    public <T extends OdooObj> List<T> findListByIds(final List<OdooId> idsToFetch, final Class<T> classToConvert) {
+        return findListByIdsInt(idsToFetch == null ? null : idsToFetch.stream().filter(odooId -> odooId.exists).map(odooId -> odooId.id).toList(), classToConvert);
     }
 
 }
