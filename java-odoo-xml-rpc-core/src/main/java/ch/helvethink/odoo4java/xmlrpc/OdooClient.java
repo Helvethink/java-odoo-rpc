@@ -29,8 +29,9 @@ import ch.helvethink.odoo4java.FetchException;
 import ch.helvethink.odoo4java.models.OdooId;
 import ch.helvethink.odoo4java.models.OdooObj;
 import ch.helvethink.odoo4java.models.OdooObject;
+import ch.helvethink.odoo4java.rpc.OdooRpcClient;
+import ch.helvethink.odoo4java.serialization.OdooObjectMapper;
 import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.*;
 
-import static ch.helvethink.odoo4java.xmlrpc.OdooConstants.*;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -48,7 +49,7 @@ import static java.util.Collections.emptyMap;
  * Abstraction of Odoo's XML-RPC API
  */
 @SuppressWarnings({"squid:S1171", "squid:S3599", "squid:S3011"})
-public class OdooClient {
+public class OdooClient implements OdooRpcClient {
     /**
      * Simple logger
      */
@@ -76,12 +77,12 @@ public class OdooClient {
     /**
      * Common API XML-RPC Client
      */
-    XmlRpcClient commonClient;
+    OdooXmlRpcClient commonClient;
 
     /**
      * Object API XML-RPC Client
      */
-    XmlRpcClient objectXmlRpcClient;
+    OdooXmlRpcClient objectXmlRpcClient;
 
     /**
      * Constructor with direct connection
@@ -106,10 +107,9 @@ public class OdooClient {
      * @param password    The Odoo password when authenticating
      * @param mustConnect - describes if we must try to connect or not
      * @throws MalformedURLException when URI is not valid
-     * @throws XmlRpcException       when an error occurs with the XML-RPC API
      */
-    public OdooClient(final String instanceUrl, final String dbName, final String username, final String password, final boolean mustConnect) throws MalformedURLException, XmlRpcException {
-        this(new XmlRpcClient() {{
+    public OdooClient(final String instanceUrl, final String dbName, final String username, final String password, final boolean mustConnect) throws MalformedURLException {
+        this(new OdooXmlRpcClient() {{
             setConfig(new XmlRpcClientConfigImpl() {{
                 setServerURL(URI.create(String.format("%s/xmlrpc/2/common", instanceUrl)).toURL());
                 setEnabledForExceptions(true);
@@ -128,15 +128,14 @@ public class OdooClient {
      * @param password     The Odoo password when authenticating
      * @param mustConnect  - describes if we must try to connect or not
      * @throws MalformedURLException when URI is not valid
-     * @throws XmlRpcException       when an error occurs with the XML-RPC API
      */
-    public OdooClient(final XmlRpcClient commonClient, final String instanceUrl, final String dbName, final String username, final String password, final boolean mustConnect) throws MalformedURLException, XmlRpcException {
+    public OdooClient(final OdooXmlRpcClient commonClient, final String instanceUrl, final String dbName, final String username, final String password, final boolean mustConnect) throws MalformedURLException {
         this.dbName = dbName;
         this.password = password;
 
         final String objectEndpoint = String.format("%s/xmlrpc/2/object", instanceUrl);
 
-        objectXmlRpcClient = new XmlRpcClient() {{
+        objectXmlRpcClient = new OdooXmlRpcClient() {{
             setConfig(new XmlRpcClientConfigImpl() {{
                 setServerURL(URI.create(objectEndpoint).toURL());
             }});
@@ -148,7 +147,7 @@ public class OdooClient {
             final Object authentication = commonClient.execute("authenticate", asList(dbName, username, password, emptyMap()));
             // In case Authentication fail through the Odoo XML RPC Api, it sends a Boolean instead of throwing an exception
             if (Boolean.FALSE.equals(authentication) || !(authentication instanceof Integer)) {
-                throw new XmlRpcException("Authentication failed");
+                throw new FetchException("Authentication failed");
             } else {
                 uid = (int) authentication;
                 LOG.info("User is {}, uid is {}", username, uid);
@@ -160,9 +159,8 @@ public class OdooClient {
      * Retrieve Version from the Odoo Server
      *
      * @return Version like "17.0"
-     * @throws XmlRpcException when an error occurs with the XML-RPC API
      */
-    public String getVersion() throws XmlRpcException {
+    public String getVersion() {
         return ((Map<String, Object>) commonClient.execute("version", emptyList())).get("server_version").toString();
     }
 
@@ -232,7 +230,6 @@ public class OdooClient {
      * @return The id of the object under its XML-RPC representation (array of objects)
      */
     private <T extends OdooObj> Object[] findByName(final Class<T> classToConvert, final String aName) {
-        try {
             return (Object[]) objectXmlRpcClient.execute(
                     XML_RPC_EXECUTE_METHOD_NAME, asList(
                             dbName, uid, password,
@@ -243,9 +240,6 @@ public class OdooClient {
                             }}
                     )
             );
-        } catch (final XmlRpcException e) {
-            throw new FetchException(e);
-        }
     }
 
 
@@ -258,9 +252,8 @@ public class OdooClient {
      * @param criteria       The search criteria
      * @param <T>            The target type
      * @return List of corresponding objects
-     * @throws XmlRpcException when an error occurs with the XML-RPC API
      */
-    public <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final String... criteria) throws XmlRpcException {
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final String... criteria) {
         final List<List<List<String>>> crits = (criteria != null && criteria.length > 0) ? List.of(List.of(asList(criteria))) :
                 List.of(List.of(asList("id", ">=", "0")));
         LOG.debug("{}", crits);
@@ -284,9 +277,8 @@ public class OdooClient {
      * @param classToConvert The type of the target Object
      * @param <T>            The type of the target Object
      * @return The object fetched
-     * @throws XmlRpcException when an error occurs with the XML-RPC API
      */
-    public <T extends OdooObj> T findObjectById(final OdooId idToFetch, final Class<T> classToConvert) throws XmlRpcException {
+    public <T extends OdooObj> T findObjectById(final OdooId idToFetch, final Class<T> classToConvert) {
         if (idToFetch == null || !idToFetch.exists) {
             return null;
         }
@@ -318,12 +310,12 @@ public class OdooClient {
             return Arrays.stream(resultFromXmlRpc)
                     .map(anObject -> odooObjectMapper.convertValue(anObject, classToConvert))
                     .toList();
-        } catch (final XmlRpcException e) {
+        } catch (final FetchException e) {
             if (e.getMessage().contains("TypeError: dictionary key must be string")) {
                 LOG.error("Exception occured for class {} with ids {}", classToConvert.getSimpleName(), idsToFetch, e); // because of account.move.line
                 return Collections.emptyList();
             } else {
-                throw new FetchException(e);
+                throw e;
             }
         }
     }

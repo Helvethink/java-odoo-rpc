@@ -31,11 +31,15 @@
 
     <parent>
         <groupId>ch.helvethink.odoo4java</groupId>
-        <artifactId>java-odoo-xml-rpc-parent</artifactId>
+        <artifactId>java-odoo-rpc-parent</artifactId>
         <version>0.0.3-SNAPSHOT</version>
     </parent>
 
     <dependencies>
+        <dependency>
+            <groupId>ch.helvethink.odoo4java</groupId>
+            <artifactId>java-odoo-rpc-core</artifactId>
+        </dependency>
         <!-- xml rpc cli -->
         <dependency>
             <groupId>org.apache.xmlrpc</groupId>

@@ -28,8 +28,6 @@ package ch.helvethink.odoo4java.xmlrpc;
 import ch.helvethink.odoo4java.models.OdooId;
 import ch.helvethink.odoo4java.models.OdooObj;
 import ch.helvethink.odoo4java.models.OdooObject;
-import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +35,7 @@ import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Map;
 
-import static ch.helvethink.odoo4java.xmlrpc.OdooConstants.XML_RPC_EXECUTE_METHOD_NAME;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.XML_RPC_EXECUTE_METHOD_NAME;
 import static java.util.Arrays.asList;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,7 +48,7 @@ import static org.mockito.Mockito.*;
 
 class OdooClientUnitTest {
 
-    private XmlRpcClient mockedClient;
+    private OdooXmlRpcClient mockedClient;
 
     private Object[] objects;
 
@@ -59,9 +57,9 @@ class OdooClientUnitTest {
     List expectedParametersForFindById = asList("testDB", 0, "testPassword", "model.test", "read", List.of(List.of(0,1,2)));
 
     @BeforeEach
-    public void setUpMock() throws MalformedURLException, XmlRpcException {
+    public void setUpMock() throws MalformedURLException {
         // Create mock dependencies
-        mockedClient = mock(XmlRpcClient.class);
+        mockedClient = mock(OdooXmlRpcClient.class);
         // Return these objects when call for search
         objects = new Object[3];
         objects[0] = Map.of(
@@ -80,7 +78,7 @@ class OdooClientUnitTest {
      * Unit tests for the 'findByCriterias()' method.
      */
     @Test
-    void testFindByCriteria() throws XmlRpcException {
+    void testFindByCriteria() {
         // Stub the execute() method call
         when(mockedClient.execute(eq(XML_RPC_EXECUTE_METHOD_NAME), anyList())).thenReturn(objects);
 
@@ -99,7 +97,7 @@ class OdooClientUnitTest {
     }
 
     @Test
-    void fetchListByIdsInt() throws XmlRpcException {
+    void fetchListByIdsInt() {
         when(mockedClient.execute(eq(XML_RPC_EXECUTE_METHOD_NAME), anyList())).thenReturn(objects);
         List<MyObj> result = odooClient.findListByIdsInt(List.of(0,1,2), MyObj.class);
         verify(mockedClient).execute(XML_RPC_EXECUTE_METHOD_NAME, expectedParametersForFindById);
@@ -112,7 +110,7 @@ class OdooClientUnitTest {
 
 
     @Test
-    void fetchListByIds() throws XmlRpcException {
+    void fetchListByIds() {
         OdooId odooId0 = new OdooId(0, "test 0");
         OdooId odooId1 = new OdooId(new Object[]{1, "test 1"});
         assertEquals("test 1", odooId1.description);
@@ -131,7 +129,7 @@ class OdooClientUnitTest {
     }
 
     @Test
-    void findObjectByOdooId() throws XmlRpcException {
+    void findObjectByOdooId() {
         OdooId odooId2 = new OdooId(2, "test 2");
         when(mockedClient.execute(eq(XML_RPC_EXECUTE_METHOD_NAME), anyList())).thenReturn(new Object[]{objects[2]});
 

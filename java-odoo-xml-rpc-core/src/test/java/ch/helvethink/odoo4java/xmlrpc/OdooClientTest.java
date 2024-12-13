@@ -25,10 +25,10 @@
 
 package ch.helvethink.odoo4java.xmlrpc;
 
+import ch.helvethink.odoo4java.FetchException;
 import ch.helvethink.odoo4java.models.OdooId;
 import ch.helvethink.odoo4java.models.project.ProjectTask;
 import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ch.helvethink.odoo4java.xmlrpc.OdooConstants.XML_RPC_EXECUTE_METHOD_NAME;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.XML_RPC_EXECUTE_METHOD_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -53,7 +53,7 @@ import static org.mockito.Mockito.when;
 class OdooClientTest {
 
     @Mock
-    XmlRpcClient mockXmlRpcClient;
+    OdooXmlRpcClient mockXmlRpcClient;
 
     OdooClient odooClient;
 
@@ -94,10 +94,10 @@ class OdooClientTest {
     }
 
     @Test
-    void testInvalidAuthentication() throws XmlRpcException {
+    void testInvalidAuthentication() {
         when(mockXmlRpcClient.execute(ArgumentMatchers.anyString(), ArgumentMatchers.any(List.class))).thenReturn(Boolean.FALSE);
 
-        final Exception exception = Assertions.assertThrows(XmlRpcException.class, () -> {
+        final Exception exception = Assertions.assertThrows(FetchException.class, () -> {
             new OdooClient(mockXmlRpcClient, "https://test.local", "demo", "invalid_user", "invalid_password", true);
         });
 
@@ -108,7 +108,7 @@ class OdooClientTest {
     }
 
     @Test
-    void testOkAuthentication() throws XmlRpcException, MalformedURLException {
+    void testOkAuthentication() throws MalformedURLException {
         when(mockXmlRpcClient.execute(ArgumentMatchers.anyString(), ArgumentMatchers.any(List.class))).thenReturn(6);
 
         int userId = new OdooClient(mockXmlRpcClient, "https://test.local", "demo", "invalid_user", "invalid_password", true).uid;
@@ -116,7 +116,7 @@ class OdooClientTest {
     }
 
     @Test
-    void testFetchByNames() throws XmlRpcException {
+    void testFetchByNames() {
         final OdooClient odooCli = mock(OdooClient.class);
         odooCli.objectXmlRpcClient = mockXmlRpcClient;
 
@@ -132,7 +132,7 @@ class OdooClientTest {
     }
 
     @Test
-    void testFindByEmptyIds() throws XmlRpcException {
+    void testFindByEmptyIds() {
         assertEquals(Collections.emptyList(), odooClient.findListByIds(Collections.emptyList(), ProjectTask.class));
         assertEquals(Collections.emptyList(), odooClient.findListByIds(null, ProjectTask.class));
         assertNull(odooClient.findObjectById(null, ProjectTask.class));

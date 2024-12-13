@@ -25,11 +25,9 @@
 
 package ch.helvethink.odoo4java.generator;
 
-import ch.helvethink.odoo4java.xmlrpc.OdooClient;
 import gg.jte.ContentType;
 import gg.jte.TemplateEngine;
 import gg.jte.output.FileOutput;
-import org.apache.xmlrpc.XmlRpcException;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +66,7 @@ public final class ClassGenerator {
      * Main method to generate a class for a model
      * All attributes of the object are public (no getters and setters), this is very conscious
      *
-     * @param pathToGenerate Path where we want to generate files - default will be target
+     * @param pathToGenerate Path where we want to generate files - default will be "target"
      * @param modelName      Name of the model we want to generate a class for
      * @param fields         Fields that have been returned from Odoo for this model
      * @throws IOException If we can't write to the destination directory
@@ -174,7 +172,7 @@ public final class ClassGenerator {
      * Main method to generate a class for a model
      * All attributes of the object are public (no getters and setters), this is very conscious
      *
-     * @param pathToGenerate Path where we want to generate files - default will be target
+     * @param pathToGenerate Path where we want to generate files - default will be "target"
      * @param modelName      Name of the model we want to generate a class
      * @param fields         Fields that have been returned from Odoo for this model
      * @throws IOException If we can't write to the destination directory

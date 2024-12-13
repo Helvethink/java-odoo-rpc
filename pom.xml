@@ -26,7 +26,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>ch.helvethink.odoo4java</groupId>
-    <artifactId>java-odoo-xml-rpc-parent</artifactId>
+    <artifactId>java-odoo-rpc-parent</artifactId>
     <version>0.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -50,7 +50,9 @@
     </developers>
 
     <modules>
+        <module>java-odoo-rpc-core</module>
         <module>java-odoo-xml-rpc-core</module>
+        <module>java-odoo-json-rpc-client</module>
         <module>java-odoo-xml-rpc-plugin</module>
     </modules>
 
@@ -86,6 +88,11 @@
             <dependency>
                 <groupId>ch.helvethink.odoo4java</groupId>
                 <artifactId>java-odoo-xml-rpc-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.helvethink.odoo4java</groupId>
+                <artifactId>java-odoo-rpc-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- xml rpc cli -->
