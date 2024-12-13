@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -206,16 +207,16 @@ public class OdooClient implements OdooRpcClient {
      * @return The list of objects returned by Odoo
      */
     <T extends OdooObj> List<T> genericCall(final int limit, final Class<T> responseType, final String method, final Object... requestCriteria) {
-        final var criteria = method.equals(ODOO_NAME_SEARCH_API) ? requestCriteria
-                :
+        final List<?> criteria = method.equals(ODOO_NAME_SEARCH_API) ? Arrays.asList(requestCriteria) :
                 method.equals("read") ? List.of(requestCriteria) : List.of(List.of(List.of(requestCriteria)));
 
+        // Warn, some of the json apis do not accept the limit field (and it produces a silent error...)
         JsonObject requestArgs = new JsonObject();
         if (limit > 0) {
             requestArgs.addProperty("limit", limit);
         }
 
-        final RequestBody body1 =
+        final RequestBody requestBody =
                 new JsonRPCRequestBuilder()
                         .withMethod("execute_kw")
                         .withService("object")
@@ -224,7 +225,7 @@ public class OdooClient implements OdooRpcClient {
 
         final Request request0 = new Request.Builder()
                 .url(instanceUrl + "/jsonrpc")
-                .post(body1)
+                .post(requestBody)
                 .build();
 
         final List<T> toReturn = new ArrayList<>();

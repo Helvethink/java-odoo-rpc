@@ -30,13 +30,13 @@
     <version>0.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Odoo Xml RPC Rooling Parent Pom</name>
-    <description>Maven plugin for generation of Java classes from an Odoo Instance</description>
+    <name>Odoo RPC APIs Parent Pom</name>
+    <description>Odoo RPC APIs abstractions, includes a maven plugin for generation of Java classes from an Odoo Instance</description>
     <url>https://github.com/Helvethink/java-odoo-xml-rpc</url>
 
     <licenses>
         <license>
-            <url>https://github.com/Helvethink/java-odoo-xml-rpc/blob/main/LICENSE</url>
+            <url>https://github.com/Helvethink/java-odoo-rpc/blob/main/LICENSE</url>
         </license>
     </licenses>
 
@@ -183,6 +183,18 @@
                 <artifactId>reflections</artifactId>
                 <version>0.10.2</version>
                 <scope>test</scope>
+            </dependency>
+
+            <!-- JSON RPC API -->
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>2.10.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>4.12.0</version>
             </dependency>
 
         </dependencies>
