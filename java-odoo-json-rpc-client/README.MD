@@ -1,20 +1,21 @@
-# java-odoo-xml-rpc-core
+# java-odoo-json-rpc-client
 
 ## Description
 
-`java-odoo-xml-rpc-core` is a Maven module that provides the core functionalities for XML-RPC communication with the
+`java-odoo-json-rpc-client` is a Maven module that provides the core functionalities for JSON-RPC communication with the
 Odoo ERP system. \
-The [OdooClient](/src/main/java/ch/helvethink/odoo4java/xmlrpc/OdooClient.java) class helps to serialize Odoo's responses into Java objects.
+The [OdooClient](/src/main/java/ch/helvethink/odoo4java/jsonrpc/OdooClient.java) class helps to serialize Odoo's responses into Java objects.
+It also supports provides us abstraction for creation, update and deletion of an Odoo Object.
 
 ## Setup Instructions
 
-To add `java-odoo-xml-rpc-core` to your project, add the following to your `pom.xml`:
+To add `java-odoo-json-rpc-client` to your project, add the following to your `pom.xml`:
 
 ```xml
 
 <dependency>
     <groupId>ch.helvethink.odoo4java</groupId>
-    <artifactId>java-odoo-xml-rpc-core</artifactId>
+    <artifactId>java-odoo-json-rpc-client</artifactId>
     <version>${odoo4java.version}</version>
 </dependency>
 ```
@@ -60,17 +61,19 @@ public class OdooClientSampleUsage {
         OdooClient cli = new OdooClient(ODOO_URL, DBNAME, USERNAME, PASSWORD, true);
         OdooObjectLoader loader = new OdooObjectLoader(cli);
 
+        LOG.info(cli.getVersion());
+
         OdooId idToFetch = new OdooId();
         idToFetch.id = 2;
 
         // Fetch a single Object by Odoo ID
-        Project project = cli.findObjectById(idToFetch, Project.class);
+        Project project = cli.findObjectById("project.project", idToFetch, Project.class);
         LOG.info(project.getDisplayName());
 
         OdooId id2fetch = new OdooId();
         id2fetch.id = 3;
         // Fetch multiple objects by Odoo IDs
-        List<Project> projects = cli.findListByIds(Arrays.asList(idToFetch, id2fetch), Project.class);
+        List<Project> projects = cli.findListByIds("project.project", Arrays.asList(idToFetch, id2fetch), Project.class);
         LOG.info(projects.stream().map(pt -> pt.getDisplayName()).collect(Collectors.joining(",")));
 
         // Fetch relationships for an odoo object, not recursively, filtering classes we want to fetch
@@ -82,7 +85,8 @@ public class OdooClientSampleUsage {
         LOG.info("3) Find by criteria limit 1 without criterion - {}", cli.findByCriteria(1, Project.class).stream().map(a -> a.getName()).collect(Collectors.joining(",")));
         LOG.info("4) Find by criteria id equals - {}", cli.findByCriteria(1, Project.class, "id", "=", "1").stream().map(a -> a.getName()).collect(Collectors.joining(",")));
 
-        // Find a list of objects using search criteria, with a limit specified - the first parameter, here 1.
+
+        // Find a list of objects using search criteria, with a limit specified - the first parameter, here 1. 
         // If no criteria is specified then everything will be fetched.
         List<TimesheetsAnalysisReport> timesheet = cli.findByCriteria(1, TimesheetsAnalysisReport.class);
         LOG.info("5) Find by criteria limit 1 without criterion - {}", timesheet.stream().map(a -> a.getName()).collect(Collectors.joining(",")));
@@ -92,22 +96,19 @@ public class OdooClientSampleUsage {
         LOG.info("6) Find by criteria no limit without criterion - {}", ts.stream().map(a -> a.getName()).collect(Collectors.joining(",")));
 
         // Fetch recursively with depth = 2
-        final TimesheetsAnalysisReport firstAccAnalyticLine = ts.get(ts.size() - 1);
-        System.out.println(firstAccAnalyticLine.getName());
-        loader.fetchRecursivelyRelationShips(firstAccAnalyticLine, 2, Collections.emptyList());
+        loader.fetchRecursivelyRelationShips(ts.getLast(), 2, Collections.emptyList());
         // Check that we fetched Currency Too
-        LOG.info(firstAccAnalyticLine.getCompanyIdAsObject().getName());
-        LOG.info(firstAccAnalyticLine.getCompanyIdAsObject().getCurrencyIdAsObject().getDisplayName());
-
-        // Fetch using the criterion name like %Sample%
-        List<Project> sampleProjects = cli.findByCriteria(1, Project.class, "name", "like", "%Sample%");
-        loader.fetchRelationShips(sampleProjects.get(0), Collections.emptyList());
-        LOG.info(sampleProjects.get(0).getTasksAsList().get(0).getDisplayName());
+        LOG.info(ts.getLast().getCompanyIdAsObject().getName());
+        LOG.info(ts.getLast().getCompanyIdAsObject().getCurrencyIdAsObject().getDisplayName());
 
         // Fetch using the criterion name like %Sample%
         List<Project> sampleProjects = cli.findByCriteria(1, Project.class, "name", "like", "%Sample%");
         loader.fetchRelationShips(sampleProjects.getFirst(), Collections.emptyList());
         LOG.info(sampleProjects.getFirst().getTasksAsList().get(0).getDisplayName());
+
+        // Find by names
+        cli.findByNames(ProjectTask.class, Collections.singletonList("Sample Project Task 1"));
+        cli.findByNames(ProjectTask.class, Arrays.asList("Sample Project Task 1", "Sample Project Task 1"));
 
     }
 }

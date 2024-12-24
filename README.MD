@@ -2,9 +2,12 @@
 
 [![Static Badge](https://img.shields.io/badge/maven%20central-0.0.2-red)](https://central.sonatype.com/namespace/ch.helvethink.odoo4java)
 
-The `Java Odoo XML-RPC` project provides tooling and abstraction for interactions with your Odoo XML-RPC API.\
-First, it provides the [java-odoo-xml-rpc-core](java-odoo-xml-rpc-core/README.MD) library which provides you some tooling for the serialization of objects returned by Odoo.\
-Second, it provides you the [java-odoo-xml-rpc-plugin](java-odoo-xml-rpc-plugin/README.MD) which will help you for the generation of Java classes corresponding to Odoo Models.
+The `Java Odoo RPC` project provides tooling and abstraction for interactions with your Odoo RPC API (JSON and XML).\
+First, it provides the [java-odoo-xml-rpc-core](java-odoo-xml-rpc-core/README.MD) library which provides you some tooling for the serialization of 
+objects returned by Odoo using the XML-RPC external API.\
+Second, it provides you the [java-odoo-json-rpc-plugin](java-odoo-json-rpc-client/README.MD) library which provides you some tooling for the serialization of
+objects returned by Odoo using the JSON-RPC external API, but also provides you some abstraction for create, update and delete operations.\
+Finally, it provides you the [java-odoo-xml-rpc-plugin](java-odoo-xml-rpc-plugin/README.MD) which will help you for the generation of Java classes corresponding to Odoo Models.
 
 
 ## Contributing

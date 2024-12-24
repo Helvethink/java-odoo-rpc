@@ -26,19 +26,16 @@
 
 package ch.helvethink.odoo4java.models.resource.calendar;
 
-import ch.helvethink.odoo4java.models.resource.ResourceCalendar;
-import ch.helvethink.odoo4java.models.res.ResCompany;
+import ch.helvethink.odoo4java.models.*;
 import ch.helvethink.odoo4java.models.account.analytic.AccountAnalyticLine;
-import ch.helvethink.odoo4java.models.OdooId;
+import ch.helvethink.odoo4java.models.res.ResCompany;
+import ch.helvethink.odoo4java.models.res.ResUsers;
+import ch.helvethink.odoo4java.models.resource.Resource;
+import ch.helvethink.odoo4java.models.resource.ResourceCalendar;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Date;
 import java.util.List;
-import ch.helvethink.odoo4java.models.res.ResUsers;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import ch.helvethink.odoo4java.models.resource.Resource;
-import ch.helvethink.odoo4java.models.OdooObj;
-import ch.helvethink.odoo4java.models.FieldRelation;
-import ch.helvethink.odoo4java.models.OdooModel;
-import ch.helvethink.odoo4java.models.OdooObject;
 
 @OdooObject("resource.calendar.leaves")
 public class ResourceCalendarLeaves implements OdooObj {

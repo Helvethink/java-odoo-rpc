@@ -56,6 +56,18 @@ public class OdooId {
     }
 
     /**
+     * Simple constructor with an Integer object as id
+     * @param id the id of the Odoo object
+     */
+    public OdooId(Integer id) {
+        if(id != null) {
+            this.id = id;
+        } else {
+            this.exists=false;
+        }
+    }
+
+    /**
      * Constructor with boolean - useful for null values
      *
      * @param b Should always be false - describe if the id exists

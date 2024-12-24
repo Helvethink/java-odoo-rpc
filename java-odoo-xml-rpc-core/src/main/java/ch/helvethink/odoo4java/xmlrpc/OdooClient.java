@@ -41,6 +41,9 @@ import java.net.URI;
 import java.util.*;
 
 import static ch.helvethink.odoo4java.serialization.OdooConstants.*;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooMethods.*;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooPagination.ODOO_LIMIT;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooPagination.ODOO_OFFSET;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -236,24 +239,25 @@ public class OdooClient implements OdooRpcClient {
                             classToConvert.getDeclaredAnnotation(OdooObject.class).value(), // modelName
                             ODOO_NAME_SEARCH_API, Collections.singletonList(aName), // Pass name as a single string
                             new HashMap<String, Object>() {{
-                                put("limit", 1);
+                                put(ODOO_LIMIT, 1);
                             }}
                     )
             );
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final String... criteria) {
+        return findByCriteria(limit, 0, classToConvert, criteria);
+    }
 
     /**
-     * Find an Odoo object using criteria.
-     * If no criteria, will send all the objects (id >=0 )
-     *
-     * @param limit          Number of objects we want to retrieve
-     * @param classToConvert Type of the target object
-     * @param criteria       The search criteria
-     * @param <T>            The target type
-     * @return List of corresponding objects
+     * {@inheritDoc}
      */
-    public <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final String... criteria) {
+    @Override
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final String... criteria) {
         final List<List<List<String>>> crits = (criteria != null && criteria.length > 0) ? List.of(List.of(asList(criteria))) :
                 List.of(List.of(asList("id", ">=", "0")));
         LOG.debug("{}", crits);
@@ -261,7 +265,8 @@ public class OdooClient implements OdooRpcClient {
                 XML_RPC_EXECUTE_METHOD_NAME, asList(dbName, uid, password,
                         classToConvert.getDeclaredAnnotation(OdooObject.class).value(), //modelName,
                         ODOO_SEARCH_READ_API, crits, new HashMap<String, Object>() {{
-                            put("limit", limit);
+                            put(ODOO_LIMIT, limit);
+                            put(ODOO_OFFSET, page*limit);
                         }}
                 )
         );
@@ -271,12 +276,7 @@ public class OdooClient implements OdooRpcClient {
     }
 
     /**
-     * Fetch an object by its id
-     *
-     * @param idToFetch      The id of the object we want to fetch
-     * @param classToConvert The type of the target Object
-     * @param <T>            The type of the target Object
-     * @return The object fetched
+     * {@inheritDoc}
      */
     public <T extends OdooObj> T findObjectById(final OdooId idToFetch, final Class<T> classToConvert) {
         if (idToFetch == null || !idToFetch.exists) {
@@ -285,20 +285,15 @@ public class OdooClient implements OdooRpcClient {
 
         final Object[] resultFromXmlRpc = (Object[]) objectXmlRpcClient.execute(
                 XML_RPC_EXECUTE_METHOD_NAME, asList(dbName, uid, password,
-                        classToConvert.getDeclaredAnnotation(OdooObject.class).value(), "read", List.of(idToFetch.id)
+                        classToConvert.getDeclaredAnnotation(OdooObject.class).value(), ODOO_READ_METHOD, List.of(idToFetch.id)
                 ));
         return odooObjectMapper.convertValue(resultFromXmlRpc[0], classToConvert);
     }
 
     /**
-     * Same as {@link #findObjectById(OdooId, Class)} but with a List
-     *
-     * @param idsToFetch     The ids of objects we want to fetch
-     * @param classToConvert The type of the target objects
-     * @param <T>            The type of the target objects
-     *                       If an exception occured, will send back an empty list
-     * @return List of built objects
+     * {@inheritDoc}
      */
+    @Override
     public <T extends OdooObj> List<T> findListByIdsInt(final List<Integer> idsToFetch, final Class<T> classToConvert) {
         if (idsToFetch == null || idsToFetch.isEmpty()) {
             return Collections.emptyList();
@@ -306,7 +301,7 @@ public class OdooClient implements OdooRpcClient {
         try {
             final Object[] resultFromXmlRpc = (Object[]) objectXmlRpcClient.execute(
                     XML_RPC_EXECUTE_METHOD_NAME, asList(dbName, uid, password,
-                            classToConvert.getDeclaredAnnotation(OdooObject.class).value(), "read", List.of(idsToFetch)));
+                            classToConvert.getDeclaredAnnotation(OdooObject.class).value(), ODOO_READ_METHOD, List.of(idsToFetch)));
             return Arrays.stream(resultFromXmlRpc)
                     .map(anObject -> odooObjectMapper.convertValue(anObject, classToConvert))
                     .toList();
@@ -321,12 +316,7 @@ public class OdooClient implements OdooRpcClient {
     }
 
     /**
-     * Same as above but with Odoo Ids
-     *
-     * @param idsToFetch     The ids of objects we want to fetch under the form of {@link OdooId}
-     * @param classToConvert The type of the target objects
-     * @param <T>            The type of the target objects
-     * @return List of built objects
+     * {@inheritDoc}
      */
     public <T extends OdooObj> List<T> findListByIds(final List<OdooId> idsToFetch, final Class<T> classToConvert) {
         return findListByIdsInt(idsToFetch == null ? null : idsToFetch.stream().filter(odooId -> odooId.exists).map(odooId -> odooId.id).toList(), classToConvert);

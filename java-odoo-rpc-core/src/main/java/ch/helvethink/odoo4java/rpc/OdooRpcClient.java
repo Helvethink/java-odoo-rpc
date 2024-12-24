@@ -36,6 +36,20 @@ import java.util.List;
 public interface OdooRpcClient {
 
     /**
+     * Find an Odoo object using criteria with pagination.
+     * If no criteria, will send all the objects (id >=0 )
+     *
+     * @param limit          Number of objects we want to retrieve
+     * @param page           The page we want to retrieve
+     * @param classToConvert Type of the target object
+     * @param criteria       The search criteria
+     * @param <T>            The target type
+     * @return List of corresponding objects
+     */
+    <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final String... criteria);
+
+
+    /**
      * Find an Odoo object using criteria.
      * If no criteria, will send all the objects (id >=0 )
      *

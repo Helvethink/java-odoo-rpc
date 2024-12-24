@@ -43,12 +43,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-import static ch.helvethink.odoo4java.serialization.OdooConstants.ODOO_NAME_SEARCH_API;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooMethods.*;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooPagination.ODOO_LIMIT;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooPagination.ODOO_OFFSET;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooServices.ODOO_COMMON_SERVICE;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooServices.ODOO_OBJECT_SERVICE;
 import static java.util.Arrays.asList;
 
 /**
@@ -60,6 +61,14 @@ public class OdooClient implements OdooRpcClient {
      * Simple logger
      */
     public static final Logger LOG = LoggerFactory.getLogger(OdooClient.class.getName());
+    /**
+     * JSON RPC API endpoint
+     */
+    public static final String JSONRPC_ENDPOINT = "/jsonrpc";
+    /**
+     * Result field returned by the Odoo JSON RPC API
+     */
+    public static final String RESULT_FIELD = "result";
 
     /**
      * DB name we target
@@ -119,16 +128,17 @@ public class OdooClient implements OdooRpcClient {
         this.httpCli = httpCli;
 
         final RequestBody body = new JsonRPCRequestBuilder()
-                .withMethod("login")
-                .withService("common")
+                .withMethod(ODOO_JSON_LOGIN_METHOD)
+                .withService(ODOO_COMMON_SERVICE)
                 .withParamArgs(dbName, username, password)
                 .buildRequest();
+
         Request request = new Request.Builder()
-                .url(instanceUrl + "/jsonrpc")
+                .url(instanceUrl + JSONRPC_ENDPOINT)
                 .post(body)
                 .build();
 
-        this.uid = getResult(request).get("result").getAsInt();
+        this.uid = getResult(request).get(RESULT_FIELD).getAsInt();
     }
 
     /**
@@ -149,20 +159,17 @@ public class OdooClient implements OdooRpcClient {
     }
 
     /**
-     * Find an Odoo object using criteria.
-     * If no criteria, will send all the objects (id >=0 )
-     *
-     * @param limit          Number of objects we want to retrieve
-     * @param classToConvert Type of the target object
-     * @param criteria       The search criteria
-     * @param <T>            The target type
-     * @return List of corresponding objects
+     * {@inheritDoc}
      */
     public <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final String... criteria) {
-        final List<List<List<String>>> crits = (criteria != null && criteria.length > 0) ? List.of(List.of(asList(criteria))) :
-                List.of(List.of(asList("id", ">=", "0")));
-        LOG.debug("{}", crits);
-        return genericCall(limit, classToConvert, "search_read", criteria);
+        return findByCriteria(limit, 0, classToConvert, criteria);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final String... criteria) {
+        return genericCall(limit, page, classToConvert, ODOO_SEARCH_READ_API, criteria);
     }
 
     /**
@@ -174,7 +181,16 @@ public class OdooClient implements OdooRpcClient {
             return null;
         }
 
-        return findByCriteria(1, classToConvert, "id", "=", String.valueOf(idToFetch.id)).get(0);
+        final List<T> foundObjects = findByCriteria(1, classToConvert, "id", "=", String.valueOf(idToFetch.id));
+        if (foundObjects.isEmpty()) {
+            LOG.warn("No object found with id {} for class {}, this can happen due to old bad unlinked references", idToFetch.id, classToConvert);
+            return null;
+        } else if (foundObjects.size() > 1) {
+            LOG.error("Multiple objects with id {} for class {}, this should not happen", idToFetch.id, classToConvert);
+            throw new FetchException("Several objects with the same id");
+        } else {
+            return foundObjects.get(0);
+        }
     }
 
 
@@ -186,7 +202,7 @@ public class OdooClient implements OdooRpcClient {
         if (idsToFetch == null || idsToFetch.isEmpty()) {
             return Collections.emptyList();
         }
-        return genericCall(0, classToConvert, "read", idsToFetch);
+        return genericCall(0, 0, classToConvert, ODOO_READ_METHOD, idsToFetch);
     }
 
     /**
@@ -197,34 +213,111 @@ public class OdooClient implements OdooRpcClient {
         return findListByIdsInt(idsToFetch == null ? null : idsToFetch.stream().filter(odooId -> odooId.exists).map(odooId -> odooId.id).toList(), classToConvert);
     }
 
+    public int createOdooObject(final OdooObj toSave) {
+        return genericSave(ODOO_CREATE_METHOD, toSave, null);
+    }
+
+    public int updateOdooObject(final OdooObj toSave, final Integer id) {
+        return genericSave(ODOO_UPDATE_METHOD, toSave, id);
+    }
+
+    public int deleteOdooObject(final Integer id, final Class<? extends OdooObj> classOfTheObject) {
+        final JsonRPCRequestBuilder jsonRPCRequestBuilder = new JsonRPCRequestBuilder();
+        final Object[] params = {dbName, uid, password, getOdooObjAnnotation(classOfTheObject), ODOO_DELETE_METHOD,
+                new Object[]{Collections.singletonList(id)}, Collections.emptyList()};
+        jsonRPCRequestBuilder.withMethod(XML_RPC_EXECUTE_METHOD_NAME)
+                .withService(ODOO_OBJECT_SERVICE)
+                .withParamArgs(params);
+
+        final RequestBody requestBody = jsonRPCRequestBuilder.buildRequest();
+
+        final Request deleteRequest = new Request.Builder()
+                .url(instanceUrl + JSONRPC_ENDPOINT).post(requestBody).build();
+
+        LOG.debug("Request body: {}", requestBody);
+
+        return requestSingleResult(deleteRequest);
+    }
+
+    /**
+     * Generic save through Odoo JSON-RPC API
+     *
+     * @param method The JSON-RPC method we need to call (create or write)
+     * @param toSave The object to save
+     * @return The id of the saved object in odoo
+     */
+    int genericSave(final String method, final OdooObj toSave, Integer id) {
+
+        final JsonRPCRequestBuilder jsonRPCRequestBuilder = new JsonRPCRequestBuilder();
+        final Object[] params = {dbName, uid, password, toSave.getClass().getDeclaredAnnotation(OdooObject.class).value(), method,
+                method.equals("write") ? new Object[]{
+                        Collections.singletonList(id),
+                        odooObjectMapper.convertValue(toSave, Map.class)
+                } : new Object[]{odooObjectMapper.convertValue(toSave, Map.class)}
+                , Collections.emptyList()};
+        jsonRPCRequestBuilder.withMethod(XML_RPC_EXECUTE_METHOD_NAME).withService(ODOO_OBJECT_SERVICE).withParamArgs(params);
+
+        final RequestBody requestBody = jsonRPCRequestBuilder.buildRequest();
+
+        final Request saveRequest = new Request.Builder().url(instanceUrl + JSONRPC_ENDPOINT).post(requestBody).build();
+
+        return requestSingleResult(saveRequest);
+    }
+
+    /**
+     * Send the request and extract the single result node as integer (for crud operations)
+     *
+     * @param request The request to send
+     * @return The result extracted from the response body
+     */
+    private int requestSingleResult(final Request request) {
+        try (final Response response = httpCli.newCall(request).execute()) {
+            if (response.isSuccessful() && response.body() != null && response.code() >= 200 && response.code() < 300) {
+                final String responseBody = response.body().string();
+                LOG.debug("Response body: {}", responseBody);
+                return odooObjectMapper.readTree(responseBody).get(RESULT_FIELD).asInt();
+            } else {
+                throw new FetchException(response.message());
+            }
+        } catch (final IOException e) {
+            throw new FetchException(e);
+        }
+    }
+
     /**
      * Generic call through Odoo JSON-RPC API
-     * @param limit Results limit
-     * @param responseType The type of objects we want to retrieve
-     * @param method The JSON-RPC method we need to call (search_name, execute, ...)
+     *
+     * @param limit           Results limit
+     * @param responseType    The type of objects we want to retrieve
+     * @param method          The JSON-RPC method we need to call (search_name, execute, ...)
      * @param requestCriteria The request criteria
-     * @param <T> Type of objects we're retrieving
+     * @param <T>             Type of objects we're retrieving
      * @return The list of objects returned by Odoo
      */
-    <T extends OdooObj> List<T> genericCall(final int limit, final Class<T> responseType, final String method, final Object... requestCriteria) {
+    <T extends OdooObj> List<T> genericCall(final int limit, final int page, final Class<T> responseType, final String method, final Object... requestCriteria) {
+        final Object[] requestCriteriaNotEmpty = requestCriteria == null || requestCriteria.length == 0 ?
+                new Object[]{"id", ">", "-1"} : requestCriteria;
+
         final List<?> criteria = method.equals(ODOO_NAME_SEARCH_API) ? Arrays.asList(requestCriteria) :
-                method.equals("read") ? List.of(requestCriteria) : List.of(List.of(List.of(requestCriteria)));
+                method.equals(ODOO_READ_METHOD) ?
+                        List.of(requestCriteriaNotEmpty) : List.of(List.of(List.of(requestCriteriaNotEmpty)));
 
         // Warn, some of the json apis do not accept the limit field (and it produces a silent error...)
         JsonObject requestArgs = new JsonObject();
         if (limit > 0) {
-            requestArgs.addProperty("limit", limit);
+            requestArgs.addProperty(ODOO_LIMIT, limit);
+            requestArgs.addProperty(ODOO_OFFSET, page * limit);
         }
 
         final RequestBody requestBody =
                 new JsonRPCRequestBuilder()
-                        .withMethod("execute_kw")
-                        .withService("object")
+                        .withMethod(XML_RPC_EXECUTE_METHOD_NAME)
+                        .withService(ODOO_OBJECT_SERVICE)
                         .withParamArgs(dbName, uid, password, responseType.getDeclaredAnnotation(OdooObject.class).value(), method, new Gson().toJsonTree(criteria), requestArgs)
                         .buildRequest();
 
         final Request request0 = new Request.Builder()
-                .url(instanceUrl + "/jsonrpc")
+                .url(instanceUrl + JSONRPC_ENDPOINT)
                 .post(requestBody)
                 .build();
 
@@ -233,7 +326,7 @@ public class OdooClient implements OdooRpcClient {
         try (final Response response = httpCli.newCall(request0).execute()) {
             if (response.isSuccessful() && response.body() != null && response.code() >= 200 && response.code() < 300) {
                 final JsonNode jsonTreeResponse = odooObjectMapper.readTree(response.body().string());
-                final JsonNode resultNode = jsonTreeResponse.get("result");
+                final JsonNode resultNode = jsonTreeResponse.get(RESULT_FIELD);
                 if (resultNode instanceof ArrayNode) {
                     for (int i = 0; i < resultNode.size(); i++) {
                         toReturn.add(odooObjectMapper.convertValue(resultNode.get(i), responseType));
@@ -247,4 +340,15 @@ public class OdooClient implements OdooRpcClient {
             throw new FetchException(e);
         }
     }
+
+    /**
+     * Retrieve the OdooObj annotation for a class
+     *
+     * @param classOfTheObject The object's type
+     * @return The value of the annotation
+     */
+    private static String getOdooObjAnnotation(final Class<? extends OdooObj> classOfTheObject) {
+        return classOfTheObject.getDeclaredAnnotation(OdooObject.class).value();
+    }
+
 }

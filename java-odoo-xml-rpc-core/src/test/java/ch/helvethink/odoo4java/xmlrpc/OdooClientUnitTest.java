@@ -35,7 +35,7 @@ import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Map;
 
-import static ch.helvethink.odoo4java.serialization.OdooConstants.XML_RPC_EXECUTE_METHOD_NAME;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooMethods.XML_RPC_EXECUTE_METHOD_NAME;
 import static java.util.Arrays.asList;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;

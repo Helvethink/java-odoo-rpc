@@ -26,35 +26,29 @@
 package ch.helvethink.odoo4java.serialization;
 
 import ch.helvethink.odoo4java.models.OdooId;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import static ch.helvethink.odoo4java.serialization.OdooDateDeserializer.DEFAULT_DATE_FORMAT;
+import java.io.IOException;
 
 /**
- * Our object mapper with custom deserializers
+ * Custom deserializer for ids (when null a Boolean is returned by Odoo)
  */
-public class OdooObjectMapper extends ObjectMapper {
+public class OdooIdSerializer extends StdSerializer<OdooId> {
 
     /**
-     * Simple constructor
+     * Default Constructor
      */
-    public OdooObjectMapper() {
-        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
-        configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
-        configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false);
-        final SimpleDateFormat df = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
-        setDateFormat(df);
-        final SimpleModule module = new SimpleModule();
-        module.addDeserializer(OdooId.class, new OdooIdDeserializer());
-        module.addSerializer(OdooId.class, new OdooIdSerializer());
-        module.addDeserializer(Date.class, new OdooDateDeserializer());
-        registerModule(module);
+    public OdooIdSerializer() {
+        super(OdooId.class);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void serialize(final OdooId value, final JsonGenerator gen, final SerializerProvider provider) throws IOException {
+        gen.writeNumber(value.id);
+    }
 }

@@ -33,23 +33,106 @@ import static java.util.Arrays.asList;
  * Simple constants class
  */
 public final class OdooConstants {
+
     /**
-     * Odoo XML-RPC API main method
+     * Services of the Odoo RPC API
      */
-    public static final String XML_RPC_EXECUTE_METHOD_NAME = "execute_kw";
+    public static final class OdooServices {
+        /**
+         * Object service
+         */
+        public static final String ODOO_OBJECT_SERVICE = "object";
+        /**
+         * Common service, for method such as login (=authenticate in xml-rpc)
+         */
+        public static final String ODOO_COMMON_SERVICE = "common";
+
+        /**
+         * No public constructor - constants class
+         */
+        private OdooServices() {
+            // Constants class
+        }
+
+    }
+
+    /**
+     * Methods of the Odoo RPC API
+     */
+    public static final class OdooMethods {
+        /**
+         * Create objects method
+         */
+        public static final String ODOO_CREATE_METHOD = "create";
+        /**
+         * Update objects method
+         */
+        public static final String ODOO_UPDATE_METHOD = "write";
+        /**
+         * Delete objects method
+         */
+        public static final String ODOO_DELETE_METHOD = "unlink";
+
+        /**
+         * Login Json rpc method
+         */
+        public static final String ODOO_JSON_LOGIN_METHOD = "login";
+
+        /**
+         * Read object by id method
+         */
+        public static final String ODOO_READ_METHOD = "read";
+
+        /**
+         * Odoo XML-RPC API search method
+         */
+        public static final String ODOO_SEARCH_READ_API = "search_read";
+        /**
+         * Odoo XML-RPC API Name search method
+         */
+        public static final String ODOO_NAME_SEARCH_API = "name_search";
+
+        /**
+         * Odoo XML-RPC API main method
+         */
+        public static final String XML_RPC_EXECUTE_METHOD_NAME = "execute_kw";
+
+        /**
+         * No public constructor - constants class
+         */
+        private OdooMethods() {
+            // Constants class
+        }
+    }
+
+    /**
+     * Pagination option
+     */
+    public static final class OdooPagination {
+        /**
+         * Limit option
+         */
+        public static final String ODOO_LIMIT = "limit";
+        /**
+         * Offset option
+         */
+        public static final String ODOO_OFFSET = "offset";
+
+        /**
+         * No public constructor - constants class
+         */
+        private OdooPagination() {
+            // Constants class
+        }
+
+    }
+
 
     /**
      * Odoo XML-RPC API Introspection for models
      */
     public static final String ODOO_INSTROSPECTION_MODEL = "ir.model";
-    /**
-     * Odoo XML-RPC API search method
-     */
-    public static final String ODOO_SEARCH_READ_API = "search_read";
-    /**
-     * Odoo XML-RPC API Name search method
-     */
-    public static final String ODOO_NAME_SEARCH_API = "name_search";
+
     /**
      * Odoo XML-RPC API fetch fields method
      */

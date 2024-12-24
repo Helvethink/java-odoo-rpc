@@ -26,22 +26,19 @@
 
 package ch.helvethink.odoo4java.models.timesheets.analysis;
 
-import ch.helvethink.odoo4java.models.project.Project;
+import ch.helvethink.odoo4java.models.*;
 import ch.helvethink.odoo4java.models.account.AccountMove;
-import ch.helvethink.odoo4java.models.res.ResCompany;
-import ch.helvethink.odoo4java.models.OdooId;
-import ch.helvethink.odoo4java.models.res.ResCurrency;
+import ch.helvethink.odoo4java.models.project.Project;
 import ch.helvethink.odoo4java.models.project.ProjectMilestone;
-import java.util.Date;
+import ch.helvethink.odoo4java.models.project.ProjectTask;
+import ch.helvethink.odoo4java.models.res.ResCompany;
+import ch.helvethink.odoo4java.models.res.ResCurrency;
 import ch.helvethink.odoo4java.models.res.ResPartner;
-import java.util.List;
 import ch.helvethink.odoo4java.models.res.ResUsers;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import ch.helvethink.odoo4java.models.OdooObj;
-import ch.helvethink.odoo4java.models.FieldRelation;
-import ch.helvethink.odoo4java.models.OdooModel;
-import ch.helvethink.odoo4java.models.OdooObject;
-import ch.helvethink.odoo4java.models.project.ProjectTask;
+
+import java.util.Date;
+import java.util.List;
 
 @OdooObject("timesheets.analysis.report")
 public class TimesheetsAnalysisReport implements OdooObj {

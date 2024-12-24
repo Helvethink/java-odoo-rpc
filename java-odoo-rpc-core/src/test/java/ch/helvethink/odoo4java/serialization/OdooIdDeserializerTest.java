@@ -27,7 +27,6 @@ package ch.helvethink.odoo4java.serialization;
 
 
 import ch.helvethink.odoo4java.models.OdooId;
-import ch.helvethink.odoo4java.serialization.OdooIdDeserializer;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;

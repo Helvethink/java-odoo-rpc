@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ch.helvethink.odoo4java.serialization.OdooConstants.XML_RPC_EXECUTE_METHOD_NAME;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooMethods.XML_RPC_EXECUTE_METHOD_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyList;

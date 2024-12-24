@@ -8,6 +8,8 @@ import okhttp3.RequestBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static ch.helvethink.odoo4java.jsonrpc.LatestRequestBodyHolder.sentRequests;
+
 /**
  * Request Builder for the Odoo RPC API
  */
@@ -27,6 +29,8 @@ public class JsonRPCRequestBuilder {
      * JSON request body
      */
     private final JsonObject requestBody = new JsonObject();
+
+    public static boolean isDebugging = false;
 
     /**
      * Which service we use during the request
@@ -74,10 +78,13 @@ public class JsonRPCRequestBuilder {
     public RequestBody buildRequest() {
         requestBody.addProperty("jsonrpc", "2.0");
         requestBody.add("params", params);
-        requestBody.addProperty("id", 1);
+        requestBody.addProperty("id", ThreadBasedIdGenerator.generateId());
 
         final String jsonRequest = new Gson().toJson(requestBody);
         LOG.debug("The following request will be sent: {}", jsonRequest);
+        if(isDebugging) {
+            sentRequests.push(jsonRequest);
+        }
         return RequestBody.create(jsonRequest, MediaType.get("application/json; charset=utf-8"));
     }
 

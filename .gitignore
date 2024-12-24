@@ -23,6 +23,9 @@ target/
 .springBeans
 .sts4-cache
 
+java-odoo-json-rpc-client/src/main/java/ch/helvethink/odoo4java/jsonrpc/Main.java
+java-odoo-xml-rpc-core/src/main/java/ch/helvethink/odoo4java/xmlrpc/Main.java
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/

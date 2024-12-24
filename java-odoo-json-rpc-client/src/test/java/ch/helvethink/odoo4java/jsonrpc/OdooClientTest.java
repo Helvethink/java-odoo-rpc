@@ -33,18 +33,19 @@ import okio.Timeout;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
+import static ch.helvethink.odoo4java.jsonrpc.LatestRequestBodyHolder.sentRequests;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class OdooClientTest {
 
@@ -59,6 +60,8 @@ class OdooClientTest {
     @BeforeEach
     void setUp() throws IOException {
         MockitoAnnotations.openMocks(this);
+        // use debug mode to get latest sent request to check if they are what we expect
+        JsonRPCRequestBuilder.isDebugging = true;
 
         when(mockResponse.isSuccessful()).thenReturn(true);
         when(mockResponse.code()).thenReturn(200);
@@ -115,68 +118,124 @@ class OdooClientTest {
 
     @Test
     void testFindObjectById() throws IOException {
-        // Arrange
-        OdooId testId = new OdooId(1, "");
+        OdooId testId = new OdooId(1);
+        assertTrue(testId.exists);
         String mockResponseJson = "{\"jsonrpc\": \"2.0\",\n" +
                 "  \"id\": 1, \"result\": [{\"name\":\"Test Project\"}]}";
 
-        // Mock response body for specific request
         when(mockResponse.body().string()).thenReturn(mockResponseJson);
 
-        // Act
         Project project = odooClient.findObjectById(testId, Project.class);
 
-        // Assert
+        assertNotNull(project);
+        assertEquals("Test Project", project.getName());
+
+        mockResponseJson = "{\"jsonrpc\": \"2.0\",\n" +
+                "  \"id\": 1, \"result\": []}";
+
+        when(mockResponse.body().string()).thenReturn(mockResponseJson);
+        project = odooClient.findObjectById(testId, Project.class);
+        assertNull(project);
+
+        mockResponseJson = "{\"jsonrpc\": \"2.0\",\n" +
+                "  \"id\": 1, \"result\": [{\"name\":\"Test Project\"}, {\"name\":\"Test Project 2\"}]}";
+
+        when(mockResponse.body().string()).thenReturn(mockResponseJson);
+        assertThrows(FetchException.class, () -> odooClient.findObjectById(testId, Project.class));
+
+    }
+
+    @Test
+    void testFindObjectByUnknownId() throws IOException {
+        OdooId testId = new OdooId(1);
+        assertTrue(testId.exists);
+        String mockResponseJson = "{\"jsonrpc\": \"2.0\",\n" +
+                "  \"id\": 1, \"result\": [{\"name\":\"Test Project\"}]}";
+
+        when(mockResponse.body().string()).thenReturn(mockResponseJson);
+
+        Project project = odooClient.findObjectById(testId, Project.class);
+
         assertNotNull(project);
         assertEquals("Test Project", project.getName());
     }
 
     @Test
     void testFindListByIds() throws IOException {
-        // Arrange
         List<OdooId> testIds = List.of(new OdooId(1, ""), new OdooId(2, "true"));
 
         String mockResponseJson = "{\"jsonrpc\": \"2.0\",\n" +
                 "  \"id\": 1, \"result\": [{\"name\":\"Project A\"}, {\"name\":\"Project B\"}]}";
-        // Mock response body for specific request
         when(mockResponse.body().string()).thenReturn(mockResponseJson);
 
-        // Act
         List<Project> projects = odooClient.findListByIds(testIds, Project.class);
 
-        // Assert
         assertNotNull(projects);
         assertEquals(2, projects.size());
         assertEquals("Project A", projects.get(0).getName());
         assertEquals("Project B", projects.get(1).getName());
     }
-//
-//    @Test
-//    void testGenericCallHandlesExceptions() {
-//        // Arrange
-//        when(mockResponse.body())
-//        // Act and Assert
-//        FetchException exception = assertThrows(FetchException.class, () ->
-//                odooClient.genericCall(0, Project.class, "method", "param1", "param2")
-//        );
-//
-//        assertEquals("No result or something went terribly wrong", exception.getMessage());
-//    }
 
     @Test
     void testGenericCallValidResponse() throws IOException {
-        // Arrange
         String mockResponseJson = "{\"result\":[{\"name\":\"Project X\"}]}";
 
-        // Mock response body for generic call
         when(mockResponse.body().string()).thenReturn(mockResponseJson);
 
-        // Act
-        List<Project> projects = odooClient.genericCall(10, Project.class, "search_read", "param1", "param2");
+        List<Project> projects = odooClient.genericCall(10, 0, Project.class, "search_read", "param1", "param2");
 
-        // Assert
         assertNotNull(projects);
         assertEquals(1, projects.size());
         assertEquals("Project X", projects.get(0).getName());
+    }
+
+    @Test
+    void testCreateOdooObject() throws IOException {
+        String mockResponseJson = "{\"result\": 10}";
+        when(mockResponse.body().string()).thenReturn(mockResponseJson);
+
+        Project p = new Project();
+        p.setId(10);
+        p.setDisplayName("Test Project");
+
+        int createdProject = odooClient.createOdooObject(p);
+
+        assertEquals(10, createdProject);
+        final String expected = Files.readString(Path.of("src/test/resources/createProjectTest.json"));
+        final String result = sentRequests.pop();
+        assertEquals(expected.substring(0, expected.lastIndexOf("id")), result.substring(0, result.lastIndexOf("id")));
+
+    }
+
+    @Test
+    void testUpdateOdooObject() throws IOException {
+        String mockResponseJson = "{\"result\": 10}";
+
+        when(mockResponse.body().string()).thenReturn(mockResponseJson);
+
+        Project p = new Project();
+        p.setId(10);
+        p.setDisplayName("Update Project");
+        
+        int updatedProject = odooClient.updateOdooObject(p, 10);
+
+        assertEquals(10, updatedProject);
+        final String expected = Files.readString(Path.of("src/test/resources/updateProjectTest.json"));
+        final String result = sentRequests.pop();
+        assertEquals(expected.substring(0, expected.lastIndexOf("id")), result.substring(0, result.lastIndexOf("id")));
+    }
+
+    @Test
+    void testDeleteOdooObject() throws IOException {
+        String mockResponseJson = "{\"result\": 10}";
+
+        when(mockResponse.body().string()).thenReturn(mockResponseJson);
+
+        int deletedProject = odooClient.deleteOdooObject(10, Project.class);
+
+        assertEquals(10, deletedProject);
+        final String expected = Files.readString(Path.of("src/test/resources/deleteProjectTest.json"));
+        final String result = sentRequests.pop();
+        assertEquals(expected.substring(0, expected.lastIndexOf("id")), result.substring(0, result.lastIndexOf("id")));
     }
 }
