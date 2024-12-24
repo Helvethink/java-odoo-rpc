@@ -4,7 +4,7 @@
 
 `java-odoo-xml-rpc-core` is a Maven module that provides the core functionalities for XML-RPC communication with the
 Odoo ERP system. \
-The [OdooClient](/src/main/java/ch/helvethink/odoo4java/xmlrpc/OdooClient.java) class helps to serialize Odoo's responses into Java objects.
+The [OdooClient](/java-odoo-xml-rpc-core/src/main/java/ch/helvethink/odoo4java/xmlrpc/OdooClient.java) class helps to serialize Odoo's responses into Java objects.
 
 ## Setup Instructions
 

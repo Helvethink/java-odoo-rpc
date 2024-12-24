@@ -4,7 +4,7 @@
 
 `java-odoo-json-rpc-client` is a Maven module that provides the core functionalities for JSON-RPC communication with the
 Odoo ERP system. \
-The [OdooClient](/src/main/java/ch/helvethink/odoo4java/jsonrpc/OdooClient.java) class helps to serialize Odoo's responses into Java objects.
+The [OdooClient](/java-odoo-json-rpc-client/src/main/java/ch/helvethink/odoo4java/jsonrpc/OdooClient.java) class helps to serialize Odoo's responses into Java objects.
 It also supports provides us abstraction for creation, update and deletion of an Odoo Object.
 
 ## Setup Instructions
