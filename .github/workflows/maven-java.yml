@@ -7,7 +7,6 @@ on: [ push, pull_request ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -25,9 +24,10 @@ jobs:
         run: mvn -B verify --file pom.xml
 
   coverage:
+    needs:
+      - build
     runs-on: ubuntu-latest
     steps:
-
       # generates coverage-report.md and publishes as checkrun
       - name: JaCoCo Code Coverage Report
         id: jacoco_reporter
