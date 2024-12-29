@@ -251,6 +251,7 @@
                 <configuration>
                     <excludes>
                         <exclude>**/odoo4java/models/**/*.class</exclude>
+                        <exclude>models/**/*</exclude>
                     </excludes>
                 </configuration>
                 <executions>

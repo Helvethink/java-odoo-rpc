@@ -71,6 +71,7 @@
                 <configuration>
                     <excludes>
                         <exclude>ch/helvethink/odoo4java/models/**/*</exclude>
+                        <exclude>models/**/*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
