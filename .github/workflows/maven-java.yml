@@ -23,17 +23,12 @@ jobs:
       - name: Build with Maven
         run: mvn -B verify --file pom.xml
 
-  coverage:
-    needs:
-      - build
-    runs-on: ubuntu-latest
-    steps:
       # generates coverage-report.md and publishes as checkrun
       - name: JaCoCo Code Coverage Report
         id: jacoco_reporter
         uses: PavanMudigonda/jacoco-reporter@v5.0
         with:
-          coverage_results_path: java-odoo-dev-tools/target/site/jacoco.xml
+          coverage_results_path: java-odoo-dev-tools/target/site/jacoco-aggregate/jacoco.xml
           coverage_report_name: Coverage
           coverage_report_title: JaCoCo
           github_token: ${{ secrets.GITHUB_TOKEN }}
