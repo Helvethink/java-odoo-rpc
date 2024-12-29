@@ -31,6 +31,7 @@ import ch.helvethink.odoo4java.models.OdooObj;
 import ch.helvethink.odoo4java.models.OdooObject;
 import ch.helvethink.odoo4java.rpc.OdooRpcClient;
 import ch.helvethink.odoo4java.serialization.OdooObjectMapper;
+import ch.helvethink.odoo4java.tools.CriteriaTools;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.gson.Gson;
@@ -39,6 +40,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.codehaus.plexus.util.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,11 +49,9 @@ import java.io.IOException;
 import java.util.*;
 
 import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooMethods.*;
-import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooPagination.ODOO_LIMIT;
-import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooPagination.ODOO_OFFSET;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooPagination.*;
 import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooServices.ODOO_COMMON_SERVICE;
 import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooServices.ODOO_OBJECT_SERVICE;
-import static java.util.Arrays.asList;
 
 /**
  * Abstraction of Odoo's JSON-RPC API
@@ -158,18 +159,48 @@ public class OdooClient implements OdooRpcClient {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final String... criteria) {
-        return findByCriteria(limit, 0, classToConvert, criteria);
+    @Override
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final String... criteria) {
+        return findByCriteria(limit, page, "", classToConvert, criteria);
+    }
+
+    @Override
+    public int countByCriteria(final Class<? extends OdooObj> objectType, final String... criteria) {
+        // Warn, some of the json apis do not accept the limit field (and it produces a silent error...)
+        JsonObject requestArgs = new JsonObject();
+
+        final RequestBody requestBody =
+                new JsonRPCRequestBuilder()
+                        .withMethod(XML_RPC_EXECUTE_METHOD_NAME)
+                        .withService(ODOO_OBJECT_SERVICE)
+                        .withParamArgs(dbName, uid, password,
+                                objectType.getDeclaredAnnotation(OdooObject.class).value(),
+                                "search_count",
+                                new Gson().toJsonTree(CriteriaTools.groupCriteria(criteria)),
+                                requestArgs)
+                        .buildRequest();
+
+        final Request request0 = new Request.Builder()
+                .url(instanceUrl + JSONRPC_ENDPOINT)
+                .post(requestBody)
+                .build();
+
+        return requestSingleResult(request0);
     }
 
     /**
      * {@inheritDoc}
      */
-    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final String... criteria) {
-        return genericCall(limit, page, classToConvert, ODOO_SEARCH_READ_API, criteria);
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final String... criteria) {
+        return findByCriteria(limit, 0, "", classToConvert, criteria);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final String sortByField, final Class<T> classToConvert, final String... criteria) {
+        return genericCall(limit, page, sortByField, classToConvert, ODOO_SEARCH_READ_API, criteria);
     }
 
     /**
@@ -202,7 +233,7 @@ public class OdooClient implements OdooRpcClient {
         if (idsToFetch == null || idsToFetch.isEmpty()) {
             return Collections.emptyList();
         }
-        return genericCall(0, 0, classToConvert, ODOO_READ_METHOD, idsToFetch);
+        return genericCall(0, 0, "", classToConvert, ODOO_READ_METHOD, idsToFetch);
     }
 
     /**
@@ -247,7 +278,6 @@ public class OdooClient implements OdooRpcClient {
      * @return The id of the saved object in odoo
      */
     int genericSave(final String method, final OdooObj toSave, Integer id) {
-
         final JsonRPCRequestBuilder jsonRPCRequestBuilder = new JsonRPCRequestBuilder();
         final Object[] params = {dbName, uid, password, toSave.getClass().getDeclaredAnnotation(OdooObject.class).value(), method,
                 method.equals("write") ? new Object[]{
@@ -284,26 +314,33 @@ public class OdooClient implements OdooRpcClient {
         }
     }
 
-    /**
-     * Generic call through Odoo JSON-RPC API
-     *
-     * @param limit           Results limit
-     * @param responseType    The type of objects we want to retrieve
-     * @param method          The JSON-RPC method we need to call (search_name, execute, ...)
-     * @param requestCriteria The request criteria
-     * @param <T>             Type of objects we're retrieving
-     * @return The list of objects returned by Odoo
-     */
     <T extends OdooObj> List<T> genericCall(final int limit, final int page, final Class<T> responseType, final String method, final Object... requestCriteria) {
+        return genericCall(limit, page, "", responseType, method, requestCriteria);
+    }
+
+        /**
+         * Generic call through Odoo JSON-RPC API
+         *
+         * @param limit           Results limit
+         * @param responseType    The type of objects we want to retrieve
+         * @param method          The JSON-RPC method we need to call (search_name, execute, ...)
+         * @param requestCriteria The request criteria
+         * @param <T>             Type of objects we're retrieving
+         * @return The list of objects returned by Odoo
+         */
+    <T extends OdooObj> List<T> genericCall(final int limit, final int page, final String sortByField, final Class<T> responseType, final String method, final Object... requestCriteria) {
         final Object[] requestCriteriaNotEmpty = requestCriteria == null || requestCriteria.length == 0 ?
                 new Object[]{"id", ">", "-1"} : requestCriteria;
 
         final List<?> criteria = method.equals(ODOO_NAME_SEARCH_API) ? Arrays.asList(requestCriteria) :
                 method.equals(ODOO_READ_METHOD) ?
-                        List.of(requestCriteriaNotEmpty) : List.of(List.of(List.of(requestCriteriaNotEmpty)));
+                        List.of(requestCriteriaNotEmpty) : CriteriaTools.groupCriteria(requestCriteriaNotEmpty);
 
         // Warn, some of the json apis do not accept the limit field (and it produces a silent error...)
         JsonObject requestArgs = new JsonObject();
+        if(!StringUtils.isEmpty(sortByField)) {
+            requestArgs.addProperty(ODOO_SORT, sortByField);
+        }
         if (limit > 0) {
             requestArgs.addProperty(ODOO_LIMIT, limit);
             requestArgs.addProperty(ODOO_OFFSET, page * limit);
