@@ -24,79 +24,37 @@ jobs:
         run: mvn -B verify --file pom.xml
 
       # generates coverage-report.md and publishes as checkrun
-      - name: JaCoCo Code Coverage Report
-        id: jacoco_reporter_json_rpc_client
-        uses: PavanMudigonda/jacoco-reporter@v5.0
+      - name: Generate JaCoCo Badge
+        uses: cicirello/jacoco-badge-generator@v2
         with:
-          coverage_results_path: java-odoo-json-rpc-client/target/site/jacoco/jacoco.xml
-          coverage_report_name: Coverage
-          coverage_report_title: java-odoo-json-rpc-client
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          skip_check_run: false
-          minimum_coverage: 70
-          fail_below_threshold: false
-          publish_only_summary: false
+          jacoco-csv-file: java-odoo-rpc-core/target/site/jacoco/jacoco.csv
+          badges-directory: .github/badges
+          generate-coverage-badge: true
+          coverage-badge-filename: rpc-core-jacoco.svg
+          coverage-label: rpc-core
+          colors: '#4c1 #97ca00 #a4a61d #dfb317 #fe7d37 #e05d44'
+          intervals: 100 90 80 70 60 0
 
-        # Publish Coverage Job Summary  # Optional
-      - name: Add Jacocoo report to workflow run summary
-        run: |
-          echo "| Outcome | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| Code Coverage % | ${{ steps.jacoco_reporter_json_rpc_client.outputs.coverage_percentage }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| :heavy_check_mark: Number of Lines Covered | ${{ steps.jacoco_reporter_json_rpc_client.outputs.covered_lines }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| :x: Number of Lines Missed | ${{ steps.jacoco_reporter_json_rpc_client.outputs.missed_lines }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Total Number of Lines | ${{ steps.jacoco_reporter_json_rpc_client.outputs.total_lines }} |" >> $GITHUB_STEP_SUMMARY
-
-      - name: JaCoCo Code Coverage Report
-        id: jacoco_reporter_rpc_core
-        uses: PavanMudigonda/jacoco-reporter@v5.0
+      # generates coverage-report.md and publishes as checkrun
+      - name: Generate JaCoCo Badge
+        uses: cicirello/jacoco-badge-generator@v2
         with:
-          coverage_results_path: java-odoo-rpc-core/target/site/jacoco/jacoco.xml
-          coverage_report_name: Coverage
-          coverage_report_title: java-odoo-json-rpc-client
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          skip_check_run: false
-          minimum_coverage: 70
-          fail_below_threshold: false
-          publish_only_summary: false
+          jacoco-csv-file: java-odoo-json-rpc-client/target/site/jacoco/jacoco.csv
+          badges-directory: .github/badges
+          generate-coverage-badge: true
+          coverage-badge-filename: rpc-client-jacoco.svg
+          coverage-label: rpc-core
+          colors: '#4c1 #97ca00 #a4a61d #dfb317 #fe7d37 #e05d44'
+          intervals: 100 90 80 70 60 0
 
-        # Publish Coverage Job Summary  # Optional
-      - name: Add Jacocoo report to workflow run summary
-        run: |
-          echo "| Outcome | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| Code Coverage % | ${{ steps.jacoco_reporter_rpc_core.outputs.coverage_percentage }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| :heavy_check_mark: Number of Lines Covered | ${{ steps.jacoco_reporter_rpc_core.outputs.covered_lines }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| :x: Number of Lines Missed | ${{ steps.jacoco_reporter_rpc_core.outputs.missed_lines }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Total Number of Lines | ${{ steps.jacoco_reporter_rpc_core.outputs.total_lines }} |" >> $GITHUB_STEP_SUMMARY
-
-      - name: JaCoCo Code Coverage Report
-        id: jacoco_reporter_xml_rpc_client
-        uses: PavanMudigonda/jacoco-reporter@v5.0
+      # generates coverage-report.md and publishes as checkrun
+      - name: Generate JaCoCo Badge
+        uses: cicirello/jacoco-badge-generator@v2
         with:
-          coverage_results_path: java-odoo-xml-rpc-core/target/site/jacoco/jacoco.xml
-          coverage_report_name: Coverage
-          coverage_report_title: java-odoo-json-rpc-client
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          skip_check_run: false
-          minimum_coverage: 70
-          fail_below_threshold: false
-          publish_only_summary: false
-
-        # Publish Coverage Job Summary  # Optional
-      - name: Add Jacocoo report to workflow run summary
-        run: |
-          echo "| Outcome | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| Code Coverage % | ${{ steps.jacoco_reporter_xml_rpc_client.outputs.coverage_percentage }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| :heavy_check_mark: Number of Lines Covered | ${{ steps.jacoco_reporter_xml_rpc_client.outputs.covered_lines }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| :x: Number of Lines Missed | ${{ steps.jacoco_reporter_xml_rpc_client.outputs.missed_lines }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Total Number of Lines | ${{ steps.jacoco_reporter_xml_rpc_client.outputs.total_lines }} |" >> $GITHUB_STEP_SUMMARY
-
-      # uploads the coverage-report.md artifact  # Optional
-      - name: Upload Code Coverage Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: code-coverage-report-markdown
-          path: coverage-results.md
-          retention-days: 1
+          jacoco-csv-file: java-odoo-xml-rpc-core/target/site/jacoco/jacoco.csv
+          badges-directory: .github/badges
+          generate-coverage-badge: true
+          coverage-badge-filename: xml-rpc-core-jacoco.svg
+          coverage-label: rpc-core
+          colors: '#4c1 #97ca00 #a4a61d #dfb317 #fe7d37 #e05d44'
+          intervals: 100 90 80 70 60 0
