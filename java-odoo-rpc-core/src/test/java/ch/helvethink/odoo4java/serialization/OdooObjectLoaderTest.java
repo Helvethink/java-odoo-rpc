@@ -92,7 +92,7 @@ class OdooObjectLoaderTest {
         odooLoader.fetchRecursivelyRelationShips(projectTask, 1, getAllClassesInPackage("ch.helvethink.odoo").stream().toList());
 
         // Asserting that the list field has been populated
-        assertEquals(resPartnersList, projectTask.getMessagePartnerIdsAsList());
+            assertEquals(resPartnersList, projectTask.getMessagePartnerIdsAsList());
     }
 
     static Set<Class<? extends OdooObj>> getAllClassesInPackage(final String packageName) {
