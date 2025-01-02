@@ -117,6 +117,10 @@ public final class OdooConstants {
          * Offset option
          */
         public static final String ODOO_OFFSET = "offset";
+        /**
+         * Sort option
+         */
+        public static final String ODOO_SORT = "order";
 
         /**
          * No public constructor - constants class

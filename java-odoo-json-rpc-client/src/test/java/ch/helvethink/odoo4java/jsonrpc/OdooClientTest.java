@@ -182,7 +182,7 @@ class OdooClientTest {
 
         when(mockResponse.body().string()).thenReturn(mockResponseJson);
 
-        List<Project> projects = odooClient.genericCall(10, 0, Project.class, "search_read", "param1", "param2");
+        List<Project> projects = odooClient.genericCall(10, 0, Project.class, "search_read", "id", ">", "10");
 
         assertNotNull(projects);
         assertEquals(1, projects.size());

@@ -49,6 +49,8 @@ public interface OdooRpcClient {
     <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final String... criteria);
 
 
+    int countByCriteria(Class<? extends OdooObj> objectType, String... criteria);
+
     /**
      * Find an Odoo object using criteria.
      * If no criteria, will send all the objects (id >=0 )
@@ -60,6 +62,8 @@ public interface OdooRpcClient {
      * @return List of corresponding objects
      */
     <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final String... criteria);
+
+    <T extends OdooObj> List<T> findByCriteria(int limit, int page, String sortByField, Class<T> classToConvert, String... criteria);
 
     /**
      * Fetch an object by its id

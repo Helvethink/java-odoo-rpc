@@ -31,8 +31,10 @@ import ch.helvethink.odoo4java.models.OdooObj;
 import ch.helvethink.odoo4java.models.OdooObject;
 import ch.helvethink.odoo4java.rpc.OdooRpcClient;
 import ch.helvethink.odoo4java.serialization.OdooObjectMapper;
+import ch.helvethink.odoo4java.tools.CriteriaTools;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +44,7 @@ import java.util.*;
 
 import static ch.helvethink.odoo4java.serialization.OdooConstants.*;
 import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooMethods.*;
-import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooPagination.ODOO_LIMIT;
-import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooPagination.ODOO_OFFSET;
+import static ch.helvethink.odoo4java.serialization.OdooConstants.OdooPagination.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -233,16 +234,16 @@ public class OdooClient implements OdooRpcClient {
      * @return The id of the object under its XML-RPC representation (array of objects)
      */
     private <T extends OdooObj> Object[] findByName(final Class<T> classToConvert, final String aName) {
-            return (Object[]) objectXmlRpcClient.execute(
-                    XML_RPC_EXECUTE_METHOD_NAME, asList(
-                            dbName, uid, password,
-                            classToConvert.getDeclaredAnnotation(OdooObject.class).value(), // modelName
-                            ODOO_NAME_SEARCH_API, Collections.singletonList(aName), // Pass name as a single string
-                            new HashMap<String, Object>() {{
-                                put(ODOO_LIMIT, 1);
-                            }}
-                    )
-            );
+        return (Object[]) objectXmlRpcClient.execute(
+                XML_RPC_EXECUTE_METHOD_NAME, asList(
+                        dbName, uid, password,
+                        classToConvert.getDeclaredAnnotation(OdooObject.class).value(), // modelName
+                        ODOO_NAME_SEARCH_API, Collections.singletonList(aName), // Pass name as a single string
+                        new HashMap<String, Object>() {{
+                            put(ODOO_LIMIT, 1);
+                        }}
+                )
+        );
     }
 
     /**
@@ -258,7 +259,29 @@ public class OdooClient implements OdooRpcClient {
      */
     @Override
     public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final String... criteria) {
-        final List<List<List<String>>> crits = (criteria != null && criteria.length > 0) ? List.of(List.of(asList(criteria))) :
+        return findByCriteria(limit, page, "", classToConvert, criteria);
+    }
+
+    // TODO fix criteria!!!
+    @Override
+    public int countByCriteria(final Class<? extends OdooObj> objectType, final String... criteria) {
+        final List<List<List<String>>> crits = (criteria != null && criteria.length > 0) ? CriteriaTools.groupCriteria(criteria) :
+                List.of(List.of(asList("id", ">=", "0")));
+        LOG.debug("{}", crits);
+
+        return (int) objectXmlRpcClient.execute(
+                XML_RPC_EXECUTE_METHOD_NAME, asList(dbName, uid, password,
+                        objectType.getDeclaredAnnotation(OdooObject.class).value(), //modelName,
+                        "search_count", crits, new HashMap<String, Object>() {})
+        );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final String sortByField, final Class<T> classToConvert, final String... criteria) {
+        final List<List<List<String>>> crits = (criteria != null && criteria.length > 0) ? CriteriaTools.groupCriteria(criteria) :
                 List.of(List.of(asList("id", ">=", "0")));
         LOG.debug("{}", crits);
         final Object[] resultFromXmlRpc = (Object[]) objectXmlRpcClient.execute(
@@ -266,7 +289,10 @@ public class OdooClient implements OdooRpcClient {
                         classToConvert.getDeclaredAnnotation(OdooObject.class).value(), //modelName,
                         ODOO_SEARCH_READ_API, crits, new HashMap<String, Object>() {{
                             put(ODOO_LIMIT, limit);
-                            put(ODOO_OFFSET, page*limit);
+                            put(ODOO_OFFSET, page * limit);
+                            if (!StringUtils.isEmpty(sortByField)) {
+                                put(ODOO_SORT, sortByField);
+                            }
                         }}
                 )
         );

@@ -64,7 +64,7 @@ class OdooObjectLoaderTest {
     void testFetchRelationShips() {
         // Mocking the dependencies
         final Project project = mock(Project.class);
-        final OdooId projectId = new OdooId();
+        final OdooId projectId = new OdooId(1);
         projectTask.setProjectId(projectId); // Setting the OdooId for the relation
 
         // Mocking findObjectById method
@@ -92,7 +92,7 @@ class OdooObjectLoaderTest {
         odooLoader.fetchRecursivelyRelationShips(projectTask, 1, getAllClassesInPackage("ch.helvethink.odoo").stream().toList());
 
         // Asserting that the list field has been populated
-        assertEquals(resPartnersList, projectTask.getMessagePartnerIdsAsList());
+            assertEquals(resPartnersList, projectTask.getMessagePartnerIdsAsList());
     }
 
     static Set<Class<? extends OdooObj>> getAllClassesInPackage(final String packageName) {
