@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -42,8 +42,8 @@ jobs:
           jacoco-csv-file: java-odoo-json-rpc-client/target/site/jacoco/jacoco.csv
           badges-directory: .github/badges
           generate-coverage-badge: true
-          coverage-badge-filename: rpc-client-jacoco.svg
-          coverage-label: rpc-core
+          coverage-badge-filename: json-rpc-client-jacoco.svg
+          coverage-label: json-rpc
           colors: '#4c1 #97ca00 #a4a61d #dfb317 #fe7d37 #e05d44'
           intervals: 100 90 80 70 60 0
 
@@ -55,6 +55,16 @@ jobs:
           badges-directory: .github/badges
           generate-coverage-badge: true
           coverage-badge-filename: xml-rpc-core-jacoco.svg
-          coverage-label: rpc-core
+          coverage-label: xml-rpc
           colors: '#4c1 #97ca00 #a4a61d #dfb317 #fe7d37 #e05d44'
           intervals: 100 90 80 70 60 0
+
+      - name: Commit and push the badge (if it changed)
+        uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
+          message: 'commit badges'
+          add: '*.svg'
+          author: "GitHub Actions"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
