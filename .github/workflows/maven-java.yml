@@ -33,7 +33,7 @@ jobs:
           coverage-badge-filename: rpc-core-jacoco.svg
           coverage-label: rpc-core
           colors: '#4c1 #97ca00 #a4a61d #dfb317 #fe7d37 #e05d44'
-          intervals: 100 90 80 70 60 0
+          intervals: 100 80 70 60 50 0
 
       # generates coverage-report.md and publishes as checkrun
       - name: Generate JaCoCo Badge
@@ -45,7 +45,7 @@ jobs:
           coverage-badge-filename: json-rpc-client-jacoco.svg
           coverage-label: json-rpc
           colors: '#4c1 #97ca00 #a4a61d #dfb317 #fe7d37 #e05d44'
-          intervals: 100 90 80 70 60 0
+          intervals: 100 80 70 60 50 0
 
       # generates coverage-report.md and publishes as checkrun
       - name: Generate JaCoCo Badge
@@ -57,7 +57,7 @@ jobs:
           coverage-badge-filename: xml-rpc-core-jacoco.svg
           coverage-label: xml-rpc
           colors: '#4c1 #97ca00 #a4a61d #dfb317 #fe7d37 #e05d44'
-          intervals: 100 90 80 70 60 0
+          intervals: 100 80 70 60 50 0
 
       - name: Commit and push the badge (if it changed)
         uses: EndBug/add-and-commit@v9

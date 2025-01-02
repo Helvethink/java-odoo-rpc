@@ -64,7 +64,7 @@ class OdooObjectLoaderTest {
     void testFetchRelationShips() {
         // Mocking the dependencies
         final Project project = mock(Project.class);
-        final OdooId projectId = new OdooId();
+        final OdooId projectId = new OdooId(1);
         projectTask.setProjectId(projectId); // Setting the OdooId for the relation
 
         // Mocking findObjectById method

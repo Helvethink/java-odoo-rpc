@@ -2,7 +2,7 @@
 
 [![Static Badge](https://img.shields.io/badge/maven%20central-0.0.4-green)](https://central.sonatype.com/artifact/ch.helvethink.odoo4java/java-odoo-rpc-parent/0.0.4)
 
-![rpc-core-cov](.github/badges/rpc-core-jacoco.svg)
+Coverage: ![rpc-core-cov](.github/badges/rpc-core-jacoco.svg)
 ![xml-rpc-cov](.github/badges/xml-rpc-core-jacoco.svg)
 ![json-rpc-cov](.github/badges/json-rpc-client-jacoco.svg)
 
