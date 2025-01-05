@@ -41,7 +41,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.codehaus.plexus.util.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -160,13 +159,12 @@ public class OdooClient implements OdooRpcClient {
     }
 
     @Override
-    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final String... criteria) {
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final Object... criteria) {
         return findByCriteria(limit, page, "", classToConvert, criteria);
     }
 
     @Override
-    public int countByCriteria(final Class<? extends OdooObj> objectType, final String... criteria) {
-        // Warn, some of the json apis do not accept the limit field (and it produces a silent error...)
+    public int countByCriteria(final Class<? extends OdooObj> objectType, final Object... criteria) {
         JsonObject requestArgs = new JsonObject();
 
         final RequestBody requestBody =
@@ -191,17 +189,15 @@ public class OdooClient implements OdooRpcClient {
     /**
      * {@inheritDoc}
      */
-    public <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final String... criteria) {
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final Object... criteria) {
         return findByCriteria(limit, 0, "", classToConvert, criteria);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final String sortByField, final Class<T> classToConvert, final String... criteria) {
-        return genericCall(limit, page, sortByField, classToConvert, ODOO_SEARCH_READ_API, criteria);
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, String sort, final Class<T> classToConvert, final Object... criteria) {
+        return genericCall(limit, page, sort, classToConvert, ODOO_SEARCH_READ_API, criteria);
     }
+
 
     /**
      * {@inheritDoc}

@@ -238,4 +238,18 @@ class OdooClientTest {
         final String result = sentRequests.pop();
         assertEquals(expected.substring(0, expected.lastIndexOf("id")), result.substring(0, result.lastIndexOf("id")));
     }
+
+    @Test
+    void testCountObjects() throws IOException {
+        String mockResponseJson = "{\"result\": 10}";
+
+        when(mockResponse.body().string()).thenReturn(mockResponseJson);
+
+        int count = odooClient.countByCriteria(Project.class, "id", ">", "0");
+
+        assertEquals(10, count);
+        final String expected = Files.readString(Path.of("src/test/resources/countProjectTest.json"));
+        final String result = sentRequests.pop();
+        assertEquals(expected.substring(0, expected.lastIndexOf("id")), result.substring(0, result.lastIndexOf("id")));
+    }
 }

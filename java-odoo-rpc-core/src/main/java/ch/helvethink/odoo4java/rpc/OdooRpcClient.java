@@ -46,10 +46,15 @@ public interface OdooRpcClient {
      * @param <T>            The target type
      * @return List of corresponding objects
      */
-    <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final String... criteria);
+    <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final Object... criteria);
 
-
-    int countByCriteria(Class<? extends OdooObj> objectType, String... criteria);
+    /**
+     * Count objects that respects the criteria (useful for pagination for instance)
+     * @param objectType Odoo objects we want to count
+     * @param criteria Criteria of the request
+     * @return number of objects
+     */
+    int countByCriteria(Class<? extends OdooObj> objectType, Object... criteria);
 
     /**
      * Find an Odoo object using criteria.
@@ -61,9 +66,18 @@ public interface OdooRpcClient {
      * @param <T>            The target type
      * @return List of corresponding objects
      */
-    <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final String... criteria);
+    <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final Object... criteria);
 
-    <T extends OdooObj> List<T> findByCriteria(int limit, int page, String sortByField, Class<T> classToConvert, String... criteria);
+    /**
+     *
+     * @param limit Number of objects we want to retrieve
+     * @param page Page we want to retrieve
+     * @param sort Field to sort results
+     * @param classToConvert Type of the target object
+     * @param criteria The search criteria
+     * @return List of corresponding objects
+     */
+    <T extends OdooObj> List<T> findByCriteria(int limit, int page, String sort, Class<T> classToConvert, Object... criteria);
 
     /**
      * Fetch an object by its id

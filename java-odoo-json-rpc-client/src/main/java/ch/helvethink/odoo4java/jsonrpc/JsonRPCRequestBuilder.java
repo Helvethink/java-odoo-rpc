@@ -68,7 +68,8 @@ public class JsonRPCRequestBuilder {
      * @return The builder instance
      */
     public JsonRPCRequestBuilder withParamArgs(final Object... args) {
-        return withParamArgs(new Gson().toJsonTree(args));
+        final Gson gson = new Gson().newBuilder().disableHtmlEscaping().create();
+        return withParamArgs(gson.toJsonTree(args));
     }
 
     /**
@@ -80,7 +81,7 @@ public class JsonRPCRequestBuilder {
         requestBody.add("params", params);
         requestBody.addProperty("id", ThreadBasedIdGenerator.generateId());
 
-        final String jsonRequest = new Gson().toJson(requestBody);
+        final String jsonRequest = new Gson().newBuilder().disableHtmlEscaping().create().toJson(requestBody);
         LOG.debug("The following request will be sent: {}", jsonRequest);
         if(isDebugging) {
             sentRequests.push(jsonRequest);
