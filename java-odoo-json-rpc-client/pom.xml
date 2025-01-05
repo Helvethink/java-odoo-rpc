@@ -28,12 +28,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>java-odoo-json-rpc-client</artifactId>
-    <version>0.0.6</version>
+    <version>0.0.7-SNAPSHOT</version>
 
     <parent>
         <groupId>ch.helvethink.odoo4java</groupId>
         <artifactId>java-odoo-rpc-parent</artifactId>
-        <version>0.0.6</version>
+        <version>0.0.7-SNAPSHOT</version>
     </parent>
 
     <properties>
