@@ -1,6 +1,6 @@
 # java-odoo-xml-rpc
 
-[![Static Badge](https://img.shields.io/badge/maven%20central-0.0.5-green)](https://central.sonatype.com/artifact/ch.helvethink.odoo4java/java-odoo-rpc-parent/0.0.5)
+[![Static Badge](https://img.shields.io/badge/maven%20central-0.0.6-green)](https://central.sonatype.com/artifact/ch.helvethink.odoo4java/java-odoo-rpc-parent/0.0.6)
 
 Coverage: ![rpc-core-cov](.github/badges/rpc-core-jacoco.svg)
 ![xml-rpc-cov](.github/badges/xml-rpc-core-jacoco.svg)
