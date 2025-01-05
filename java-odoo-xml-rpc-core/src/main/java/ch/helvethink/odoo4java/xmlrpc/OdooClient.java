@@ -250,7 +250,7 @@ public class OdooClient implements OdooRpcClient {
      * {@inheritDoc}
      */
     @Override
-    public <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final String... criteria) {
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final Class<T> classToConvert, final Object... criteria) {
         return findByCriteria(limit, 0, classToConvert, criteria);
     }
 
@@ -258,14 +258,13 @@ public class OdooClient implements OdooRpcClient {
      * {@inheritDoc}
      */
     @Override
-    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final String... criteria) {
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final Class<T> classToConvert, final Object... criteria) {
         return findByCriteria(limit, page, "", classToConvert, criteria);
     }
 
-    // TODO fix criteria!!!
     @Override
-    public int countByCriteria(final Class<? extends OdooObj> objectType, final String... criteria) {
-        final List<List<List<String>>> crits = (criteria != null && criteria.length > 0) ? CriteriaTools.groupCriteria(criteria) :
+    public int countByCriteria(final Class<? extends OdooObj> objectType, final Object... criteria) {
+        final List<List<List<Object>>> crits = (criteria != null && criteria.length > 0) ? CriteriaTools.groupCriteria(criteria) :
                 List.of(List.of(asList("id", ">=", "0")));
         LOG.debug("{}", crits);
 
@@ -280,8 +279,8 @@ public class OdooClient implements OdooRpcClient {
      * {@inheritDoc}
      */
     @Override
-    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final String sortByField, final Class<T> classToConvert, final String... criteria) {
-        final List<List<List<String>>> crits = (criteria != null && criteria.length > 0) ? CriteriaTools.groupCriteria(criteria) :
+    public <T extends OdooObj> List<T> findByCriteria(final int limit, final int page, final String sortByField, final Class<T> classToConvert, final Object... criteria) {
+        final List<List<List<Object>>> crits = (criteria != null && criteria.length > 0) ? CriteriaTools.groupCriteria(criteria) :
                 List.of(List.of(asList("id", ">=", "0")));
         LOG.debug("{}", crits);
         final Object[] resultFromXmlRpc = (Object[]) objectXmlRpcClient.execute(
