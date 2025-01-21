@@ -31,7 +31,7 @@
     <parent>
         <groupId>ch.helvethink.odoo4java</groupId>
         <artifactId>java-odoo-rpc-parent</artifactId>
-        <version>0.0.7-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <properties>
