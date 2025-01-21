@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ch.helvethink.odoo4java</groupId>
     <artifactId>java-odoo-rpc-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Odoo RPC APIs Parent Pom</name>
@@ -80,7 +80,7 @@
         <connection>scm:git:git://github.com/Helvethink/java-odoo-xml-rpc.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/Helvethink/java-odoo-xml-rpc.git</developerConnection>
         <url>https://github.com/Helvethink/java-odoo-xml-rpc.git</url>
-      <tag>1.0.0</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <dependencyManagement>
