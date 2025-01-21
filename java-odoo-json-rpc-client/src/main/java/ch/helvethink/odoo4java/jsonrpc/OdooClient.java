@@ -261,8 +261,6 @@ public class OdooClient implements OdooRpcClient {
         final Request deleteRequest = new Request.Builder()
                 .url(instanceUrl + JSONRPC_ENDPOINT).post(requestBody).build();
 
-        LOG.debug("Request body: {}", requestBody);
-
         return requestSingleResult(deleteRequest);
     }
 

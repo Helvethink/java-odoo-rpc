@@ -34,12 +34,12 @@
 
     <Loggers>
         <!-- Root logger -->
-        <Root level="info">
+        <Root level="debug">
             <AppenderRef ref="Console"/>
         </Root>
 
         <!-- Example of setting specific logging level for a library -->
-        <Logger name="ch.helvethink" level="info" additivity="false">
+        <Logger name="ch.helvethink" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
     </Loggers>

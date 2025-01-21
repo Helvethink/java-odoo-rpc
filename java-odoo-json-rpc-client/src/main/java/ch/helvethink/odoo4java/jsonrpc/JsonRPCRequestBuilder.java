@@ -1,12 +1,16 @@
 package ch.helvethink.odoo4java.jsonrpc;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
+import com.google.gson.*;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import static ch.helvethink.odoo4java.jsonrpc.LatestRequestBodyHolder.sentRequests;
 
@@ -82,11 +86,23 @@ public class JsonRPCRequestBuilder {
         requestBody.addProperty("id", ThreadBasedIdGenerator.generateId());
 
         final String jsonRequest = new Gson().newBuilder().disableHtmlEscaping().create().toJson(requestBody);
-        LOG.debug("The following request will be sent: {}", jsonRequest);
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("The following request will be sent: {}", buildRequestNoPassword());
+        }
         if(isDebugging) {
             sentRequests.push(jsonRequest);
         }
         return RequestBody.create(jsonRequest, MediaType.get("application/json; charset=utf-8"));
+    }
+
+    private String buildRequestNoPassword() {
+        JsonObject requestBodyNoPass = new JsonObject();
+        requestBodyNoPass.addProperty("jsonrpc", "2.0");
+        JsonArray argsArray = params.getAsJsonArray("args");
+        argsArray.set(2, new JsonPrimitive("*****"));
+        requestBodyNoPass.add("params", argsArray);
+        requestBodyNoPass.addProperty("id", ThreadBasedIdGenerator.generateId());
+        return new Gson().newBuilder().disableHtmlEscaping().create().toJson(requestBodyNoPass);
     }
 
 }
