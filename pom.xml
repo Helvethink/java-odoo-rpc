@@ -180,7 +180,7 @@
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-commons</artifactId>
-                <version>1.11.2</version>
+                <version>RELEASE</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
