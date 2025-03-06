@@ -5,6 +5,9 @@ name: Maven Package
 
 on: [ push, pull_request ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,9 +16,14 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -25,7 +33,7 @@ jobs:
 
       # generates coverage-report.md and publishes as checkrun
       - name: Generate JaCoCo Badge
-        uses: cicirello/jacoco-badge-generator@v2
+        uses: cicirello/jacoco-badge-generator@f33476a5a3fd5a4f77cb5eef2ebe728c1dd5b921 # v2.11.0
         with:
           jacoco-csv-file: java-odoo-rpc-core/target/site/jacoco/jacoco.csv
           badges-directory: .github/badges
@@ -37,7 +45,7 @@ jobs:
 
       # generates coverage-report.md and publishes as checkrun
       - name: Generate JaCoCo Badge
-        uses: cicirello/jacoco-badge-generator@v2
+        uses: cicirello/jacoco-badge-generator@f33476a5a3fd5a4f77cb5eef2ebe728c1dd5b921 # v2.11.0
         with:
           jacoco-csv-file: java-odoo-json-rpc-client/target/site/jacoco/jacoco.csv
           badges-directory: .github/badges
@@ -49,7 +57,7 @@ jobs:
 
       # generates coverage-report.md and publishes as checkrun
       - name: Generate JaCoCo Badge
-        uses: cicirello/jacoco-badge-generator@v2
+        uses: cicirello/jacoco-badge-generator@f33476a5a3fd5a4f77cb5eef2ebe728c1dd5b921 # v2.11.0
         with:
           jacoco-csv-file: java-odoo-xml-rpc-core/target/site/jacoco/jacoco.csv
           badges-directory: .github/badges
@@ -60,7 +68,7 @@ jobs:
           intervals: 100 80 70 60 50 0
 
       - name: Commit and push the badge (if it changed)
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
         with:
           default_author: github_actions
           message: 'commit badges'
