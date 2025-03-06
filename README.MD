@@ -1,12 +1,14 @@
 # java-odoo-xml-rpc
 
-[![Static Badge](https://img.shields.io/badge/maven%20central-0.0.6-green)](https://central.sonatype.com/artifact/ch.helvethink.odoo4java/java-odoo-rpc-parent/0.0.6)
+[![Static Badge](https://img.shields.io/badge/maven%20central-1.0.0-green)](https://central.sonatype.com/artifact/ch.helvethink.odoo4java/java-odoo-rpc-parent/1.0.0)
 
 Coverage: ![rpc-core-cov](.github/badges/rpc-core-jacoco.svg)
 ![xml-rpc-cov](.github/badges/xml-rpc-core-jacoco.svg)
 ![json-rpc-cov](.github/badges/json-rpc-client-jacoco.svg)
 
+OpenSSF:
 ![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Helvethink/java-odoo-rpc/badge?style=flat)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10106/badge)](https://www.bestpractices.dev/projects/10106)
 
 The `Java Odoo RPC` project provides tooling and abstraction for interactions with your Odoo RPC API (JSON and XML).\
 First, it provides the [java-odoo-xml-rpc-core](java-odoo-xml-rpc-core/README.MD) library which provides you some tooling for the serialization of 
