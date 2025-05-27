@@ -33,7 +33,7 @@ jobs:
 
       # generates coverage-report.md and publishes as checkrun
       - name: Generate JaCoCo Badge
-        uses: cicirello/jacoco-badge-generator@f33476a5a3fd5a4f77cb5eef2ebe728c1dd5b921 # v2.11.0
+        uses: cicirello/jacoco-badge-generator@188d0c9998ca8315864405ed5e6c2ecf8fa9c421 # v2.12.0
         with:
           jacoco-csv-file: java-odoo-rpc-core/target/site/jacoco/jacoco.csv
           badges-directory: .github/badges
@@ -45,7 +45,7 @@ jobs:
 
       # generates coverage-report.md and publishes as checkrun
       - name: Generate JaCoCo Badge
-        uses: cicirello/jacoco-badge-generator@f33476a5a3fd5a4f77cb5eef2ebe728c1dd5b921 # v2.11.0
+        uses: cicirello/jacoco-badge-generator@188d0c9998ca8315864405ed5e6c2ecf8fa9c421 # v2.12.0
         with:
           jacoco-csv-file: java-odoo-json-rpc-client/target/site/jacoco/jacoco.csv
           badges-directory: .github/badges
@@ -57,7 +57,7 @@ jobs:
 
       # generates coverage-report.md and publishes as checkrun
       - name: Generate JaCoCo Badge
-        uses: cicirello/jacoco-badge-generator@f33476a5a3fd5a4f77cb5eef2ebe728c1dd5b921 # v2.11.0
+        uses: cicirello/jacoco-badge-generator@188d0c9998ca8315864405ed5e6c2ecf8fa9c421 # v2.12.0
         with:
           jacoco-csv-file: java-odoo-xml-rpc-core/target/site/jacoco/jacoco.csv
           badges-directory: .github/badges
