@@ -26,9 +26,9 @@ To use the Odoo Generator Plugin in your Maven project, add the following depend
 <build>
   <plugins>
     <plugin>
-      <groupId>ch.helvethink.odoo</groupId>
-      <artifactId>odoo-generator-plugin</artifactId>
-      <version>0.0.1</version>
+      <groupId>ch.helvethink.odoo4java</groupId>
+      <artifactId>java-odoo-xml-rpc-plugin</artifactId>
+      <version>1.0.1</version>
     </plugin>
   </plugins>
 </build>

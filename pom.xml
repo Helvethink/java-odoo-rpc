@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ch.helvethink.odoo4java</groupId>
     <artifactId>java-odoo-rpc-parent</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <packaging>pom</packaging>
 
     <name>Odoo RPC APIs Parent Pom</name>
@@ -232,6 +232,13 @@
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <keyname>CFCF9634D43CE6E8</keyname>
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
