@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ch.helvethink.odoo4java</groupId>
     <artifactId>java-odoo-rpc-parent</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <packaging>pom</packaging>
 
     <name>Odoo RPC APIs Parent Pom</name>
@@ -243,10 +243,17 @@
             <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.7.0</version>
+                <version>0.9.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <publishingServerId>central</publishingServerId>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
             <plugin>
